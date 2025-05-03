@@ -33,8 +33,8 @@ def mock_twilio_request_data():
         dict: Mock Twilio request data.
     """
     return {
-        "CallSid": "CA12345678901234567890123456789012",
-        "AccountSid": "AC12345678901234567890123456789012",
+        "CallSid": "FAKE_CALL_SID_TEST12345",
+        "AccountSid": "FAKE_ACCOUNT_SID_TEST12345",
         "From": "+15551234567",
         "To": "+15559876543",
         "CallStatus": "in-progress",
@@ -43,8 +43,8 @@ def mock_twilio_request_data():
         "ForwardedFrom": "",
         "CallerName": "Test Caller",
         "ParentCallSid": "",
-        "RecordingUrl": "https://api.twilio.com/2010-04-01/Accounts/AC12345678901234567890123456789012/Recordings/RE12345678901234567890123456789012",
-        "RecordingSid": "RE12345678901234567890123456789012",
+        "RecordingUrl": "https://example.com/recordings/FAKE_RECORDING_SID_TEST12345",
+        "RecordingSid": "FAKE_RECORDING_SID_TEST12345",
     }
 
 @pytest.fixture

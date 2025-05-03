@@ -1,0 +1,99 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.ipynb_checkpoints
+
+# Project specific
+.env
+.env.*
+!.env.example
+config.local.py
+
+# GCP specific
+app.yaml
+.gcloudignore
+*-credentials.json
+*-key.json
+cloud-credentials.json
+
+# Testing artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Logs
+logs/
+*.log
+
+# Twilio artifacts
+twilio.env
+twilio.json
+
+# OpenAI artifacts
+openai.env
+openai.json
+
+# Audio files
+*.wav
+*.mp3
+*.ogg
+*.flac
+
+# Large data files
+*.csv
+*.xlsx
+*.db
+*.sqlite3
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraformrc
+terraform.rc
+
+# Build artifacts
+.dockerignore
+docker-build.log
+
+# Secrets
+*.pem
+*.key
+*secret*
+*password*

@@ -60,16 +60,16 @@ def test_get_menu_items_by_category(db_session: Session):
 
 def test_search_menu_items(db_session: Session):
     """Test search_menu_items tool function."""
-    # Search for a common term
-    results = search_menu_items(db_session, "Pizza")
+    # Search for a common term that exists in our Indian cuisine database
+    results = search_menu_items(db_session, "Chicken")
     
     assert isinstance(results, list)
     assert len(results) > 0
     assert all(isinstance(item, dict) for item in results)
     assert all(key in item for item in results for key in ["id", "name", "description", "price", "category"])
     
-    # Verify all items have "Pizza" in their name
-    assert all("Pizza" in item["name"] for item in results)
+    # Verify all items have "Chicken" in their name
+    assert all("Chicken" in item["name"] for item in results)
     
     # Test with no results
     no_results = search_menu_items(db_session, "NonexistentItem")

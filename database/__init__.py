@@ -35,11 +35,19 @@ def init_db():
     # Create tables
     create_tables(engine)
     
-    # Seed database with mock data
+    # Check if data already exists
     session = SessionLocal()
     try:
-        seed_database(session)
-        logger.info("Database initialized successfully.")
+        # Check if we already have menu categories
+        from database.models import MenuCategory
+        existing_categories = session.query(MenuCategory).first()
+        
+        # Only seed if no data exists
+        if not existing_categories:
+            seed_database(session)
+            logger.info("Database initialized with seed data.")
+        else:
+            logger.info("Database already contains data, skipping seed operation.")
     except Exception as e:
         logger.error(f"Error initializing database: {str(e)}")
         session.rollback()

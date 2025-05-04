@@ -1,6 +1,6 @@
 # database/mock_data.py
 """
-Mock data for the restaurant database.
+Mock data for the restaurant database with Indian cuisine.
 
 This module provides functions to seed the database with realistic test data.
 """
@@ -35,20 +35,18 @@ def seed_database(session: Session):
 
 def seed_categories(session: Session):
     """
-    Seed menu categories.
+    Seed menu categories with Indian cuisine categories.
     
     Args:
         session: SQLAlchemy session
     """
     categories = [
-        MenuCategory(name="Appetizers", description="Small dishes to start your meal", display_order=1),
-        MenuCategory(name="Soups & Salads", description="Fresh and healthy options", display_order=2),
-        MenuCategory(name="Main Courses", description="Our signature dishes", display_order=3),
-        MenuCategory(name="Pasta", description="Homemade pasta dishes", display_order=4),
-        MenuCategory(name="Pizza", description="Wood-fired pizzas", display_order=5),
-        MenuCategory(name="Sides", description="Perfect accompaniments", display_order=6),
-        MenuCategory(name="Desserts", description="Sweet treats to end your meal", display_order=7),
-        MenuCategory(name="Beverages", description="Refreshing drinks", display_order=8),
+        MenuCategory(name="Starters", description="Delicious appetizers to begin your meal", display_order=1),
+        MenuCategory(name="Main Courses", description="Flavorful Indian curries and dishes", display_order=2),
+        MenuCategory(name="Bread", description="Traditional Indian bread varieties", display_order=3),
+        MenuCategory(name="Rice Dishes", description="Aromatic rice specialties", display_order=4),
+        MenuCategory(name="Desserts", description="Sweet treats to complete your meal", display_order=5),
+        MenuCategory(name="Beverages", description="Refreshing drinks and traditional Indian beverages", display_order=6),
     ]
     
     for category in categories:
@@ -58,46 +56,35 @@ def seed_categories(session: Session):
 
 def seed_ingredients(session: Session):
     """
-    Seed ingredients.
+    Seed ingredients common in Indian cuisine.
     
     Args:
         session: SQLAlchemy session
     """
     ingredients = [
-        Ingredient(name="Tomato", description="Fresh ripe tomatoes", allergen=False),
-        Ingredient(name="Onion", description="Sweet yellow onions", allergen=False),
-        Ingredient(name="Garlic", description="Fresh garlic cloves", allergen=False),
-        Ingredient(name="Basil", description="Fresh basil leaves", allergen=False),
-        Ingredient(name="Mozzarella", description="Fresh mozzarella cheese", allergen=True),
-        Ingredient(name="Parmesan", description="Aged Parmesan cheese", allergen=True),
-        Ingredient(name="Olive Oil", description="Extra virgin olive oil", allergen=False),
-        Ingredient(name="Salt", description="Sea salt", allergen=False),
-        Ingredient(name="Black Pepper", description="Freshly ground black pepper", allergen=False),
-        Ingredient(name="Flour", description="All-purpose flour", allergen=True),
-        Ingredient(name="Chicken", description="Free-range chicken", allergen=False),
-        Ingredient(name="Beef", description="Grass-fed beef", allergen=False),
-        Ingredient(name="Salmon", description="Wild-caught salmon", allergen=False),
-        Ingredient(name="Shrimp", description="Wild-caught shrimp", allergen=True),
-        Ingredient(name="Pasta", description="Homemade pasta", allergen=True),
-        Ingredient(name="Rice", description="Arborio rice", allergen=False),
-        Ingredient(name="Lettuce", description="Fresh lettuce", allergen=False),
-        Ingredient(name="Cucumber", description="Fresh cucumber", allergen=False),
-        Ingredient(name="Carrot", description="Fresh carrots", allergen=False),
-        Ingredient(name="Mushroom", description="Fresh mushrooms", allergen=False),
-        Ingredient(name="Egg", description="Free-range eggs", allergen=True),
+        Ingredient(name="Rice", description="Basmati rice", allergen=False),
+        Ingredient(name="Wheat Flour", description="Atta flour for bread", allergen=True),
+        Ingredient(name="Chickpea Flour", description="Besan flour", allergen=False),
+        Ingredient(name="Paneer", description="Indian cottage cheese", allergen=True),
+        Ingredient(name="Chicken", description="Fresh chicken", allergen=False),
+        Ingredient(name="Lamb", description="Fresh lamb meat", allergen=False),
+        Ingredient(name="Potatoes", description="Fresh potatoes", allergen=False),
+        Ingredient(name="Onions", description="Red onions", allergen=False),
+        Ingredient(name="Tomatoes", description="Ripe tomatoes", allergen=False),
+        Ingredient(name="Garlic", description="Fresh garlic", allergen=False),
+        Ingredient(name="Ginger", description="Fresh ginger", allergen=False),
+        Ingredient(name="Cumin", description="Cumin seeds and powder", allergen=False),
+        Ingredient(name="Coriander", description="Coriander seeds and powder", allergen=False),
+        Ingredient(name="Turmeric", description="Turmeric powder", allergen=False),
+        Ingredient(name="Garam Masala", description="Blend of spices", allergen=False),
+        Ingredient(name="Chili", description="Green and red chilies", allergen=False),
+        Ingredient(name="Cardamom", description="Green and black cardamom", allergen=False),
+        Ingredient(name="Cinnamon", description="Cinnamon sticks", allergen=False),
         Ingredient(name="Milk", description="Whole milk", allergen=True),
-        Ingredient(name="Cream", description="Heavy cream", allergen=True),
-        Ingredient(name="Butter", description="Unsalted butter", allergen=True),
+        Ingredient(name="Yogurt", description="Plain yogurt", allergen=True),
+        Ingredient(name="Ghee", description="Clarified butter", allergen=True),
         Ingredient(name="Sugar", description="Granulated sugar", allergen=False),
-        Ingredient(name="Chocolate", description="Dark chocolate", allergen=True),
-        Ingredient(name="Vanilla", description="Pure vanilla extract", allergen=False),
-        Ingredient(name="Lemon", description="Fresh lemons", allergen=False),
-        Ingredient(name="Lime", description="Fresh limes", allergen=False),
-        Ingredient(name="Wine", description="White wine", allergen=False),
-        Ingredient(name="Bread", description="Artisan bread", allergen=True),
-        Ingredient(name="Nuts", description="Mixed nuts", allergen=True),
-        Ingredient(name="Wheat", description="Wheat products", allergen=True),
-        Ingredient(name="Soy", description="Soy products", allergen=True),
+        Ingredient(name="Tea Leaves", description="Black tea leaves", allergen=False),
     ]
     
     for ingredient in ingredients:
@@ -137,10 +124,6 @@ def seed_dietary_restrictions(session: Session):
             restriction_type=DietaryRestrictionType.HALAL,
             description="Prepared according to Islamic law"
         ),
-        DietaryRestriction(
-            restriction_type=DietaryRestrictionType.KOSHER,
-            description="Prepared according to Jewish dietary laws"
-        ),
     ]
     
     for restriction in restrictions:
@@ -150,7 +133,7 @@ def seed_dietary_restrictions(session: Session):
 
 def seed_menu_items(session: Session):
     """
-    Seed menu items.
+    Seed menu items with Indian dishes.
     
     Args:
         session: SQLAlchemy session
@@ -159,340 +142,186 @@ def seed_menu_items(session: Session):
     categories = {category.name: category for category in session.query(MenuCategory).all()}
     
     menu_items = [
-        # Appetizers
+        # Starters
         MenuItem(
-            category=categories["Appetizers"],
-            name="Bruschetta",
-            description="Grilled bread rubbed with garlic and topped with diced tomatoes, fresh basil, and olive oil",
-            price=8.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=10
-        ),
-        MenuItem(
-            category=categories["Appetizers"],
-            name="Garlic Bread",
-            description="Freshly baked bread with garlic butter and herbs",
+            category=categories["Starters"],
+            name="Samosa",
+            description="Crispy pastry filled with spiced potatoes and peas",
             price=5.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=8
-        ),
-        MenuItem(
-            category=categories["Appetizers"],
-            name="Calamari",
-            description="Lightly fried squid served with marinara sauce",
-            price=12.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=15
-        ),
-        MenuItem(
-            category=categories["Appetizers"],
-            name="Mozzarella Sticks",
-            description="Breaded and fried mozzarella cheese served with marinara sauce",
-            price=9.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=12
-        ),
-        
-        # Soups & Salads
-        MenuItem(
-            category=categories["Soups & Salads"],
-            name="Caesar Salad",
-            description="Romaine lettuce with Caesar dressing, croutons, and Parmesan cheese",
-            price=10.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=10
-        ),
-        MenuItem(
-            category=categories["Soups & Salads"],
-            name="Minestrone Soup",
-            description="Traditional Italian vegetable soup with pasta and beans",
-            price=7.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=5
-        ),
-        MenuItem(
-            category=categories["Soups & Salads"],
-            name="Caprese Salad",
-            description="Fresh mozzarella, tomatoes, and basil with balsamic glaze",
-            price=11.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=8
-        ),
-        MenuItem(
-            category=categories["Soups & Salads"],
-            name="Italian Chopped Salad",
-            description="Mixed greens, salami, provolone, chickpeas, and Italian dressing",
-            price=12.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=10
-        ),
-        
-        # Main Courses
-        MenuItem(
-            category=categories["Main Courses"],
-            name="Chicken Parmesan",
-            description="Breaded chicken breast topped with marinara sauce and mozzarella, served with pasta",
-            price=18.99,
-            is_available=True,
-            special_item=True,
-            spiciness_level=0,
-            preparation_time_minutes=25
-        ),
-        MenuItem(
-            category=categories["Main Courses"],
-            name="Grilled Salmon",
-            description="Atlantic salmon with lemon butter sauce, served with seasonal vegetables",
-            price=22.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=20
-        ),
-        MenuItem(
-            category=categories["Main Courses"],
-            name="Veal Marsala",
-            description="Pan-seared veal with mushrooms in Marsala wine sauce, served with pasta",
-            price=24.99,
-            is_available=True,
-            special_item=True,
-            spiciness_level=0,
-            preparation_time_minutes=30
-        ),
-        MenuItem(
-            category=categories["Main Courses"],
-            name="Eggplant Parmesan",
-            description="Breaded eggplant topped with marinara sauce and mozzarella, served with pasta",
-            price=16.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=25
-        ),
-        
-        # Pasta
-        MenuItem(
-            category=categories["Pasta"],
-            name="Spaghetti Bolognese",
-            description="Spaghetti with slow-cooked meat sauce",
-            price=15.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=20
-        ),
-        MenuItem(
-            category=categories["Pasta"],
-            name="Fettuccine Alfredo",
-            description="Fettuccine pasta in a rich, creamy Parmesan sauce",
-            price=14.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=18
-        ),
-        MenuItem(
-            category=categories["Pasta"],
-            name="Lasagna",
-            description="Layers of pasta, ricotta cheese, and meat sauce",
-            price=16.99,
-            is_available=True,
-            special_item=True,
-            spiciness_level=0,
-            preparation_time_minutes=15
-        ),
-        MenuItem(
-            category=categories["Pasta"],
-            name="Linguine with Clams",
-            description="Linguine pasta with fresh clams in white wine sauce",
-            price=19.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=22
-        ),
-        
-        # Pizza
-        MenuItem(
-            category=categories["Pizza"],
-            name="Margherita Pizza",
-            description="Tomato sauce, fresh mozzarella, and basil",
-            price=14.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=15
-        ),
-        MenuItem(
-            category=categories["Pizza"],
-            name="Pepperoni Pizza",
-            description="Tomato sauce, mozzarella, and pepperoni",
-            price=15.99,
             is_available=True,
             special_item=False,
             spiciness_level=1,
             preparation_time_minutes=15
         ),
         MenuItem(
-            category=categories["Pizza"],
-            name="Vegetarian Pizza",
-            description="Tomato sauce, mozzarella, and assorted vegetables",
-            price=16.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=18
-        ),
-        MenuItem(
-            category=categories["Pizza"],
-            name="Quattro Formaggi",
-            description="Four cheese pizza with mozzarella, gorgonzola, Parmesan, and fontina",
-            price=17.99,
+            category=categories["Starters"],
+            name="Paneer Tikka",
+            description="Marinated cottage cheese cubes grilled in tandoor",
+            price=8.99,
             is_available=True,
             special_item=True,
-            spiciness_level=0,
-            preparation_time_minutes=15
-        ),
-        
-        # Sides
-        MenuItem(
-            category=categories["Sides"],
-            name="Roasted Potatoes",
-            description="Potatoes roasted with rosemary and garlic",
-            price=5.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=8
+            spiciness_level=2,
+            preparation_time_minutes=20
         ),
         MenuItem(
-            category=categories["Sides"],
-            name="Grilled Vegetables",
-            description="Seasonal vegetables grilled with olive oil and herbs",
+            category=categories["Starters"],
+            name="Pakora",
+            description="Vegetable fritters with chickpea batter",
             price=6.99,
             is_available=True,
             special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=10
+            spiciness_level=1,
+            preparation_time_minutes=12
+        ),
+        
+        # Main Courses
+        MenuItem(
+            category=categories["Main Courses"],
+            name="Butter Chicken",
+            description="Tandoori chicken in rich tomato and butter gravy",
+            price=15.99,
+            is_available=True,
+            special_item=True,
+            spiciness_level=2,
+            preparation_time_minutes=25
         ),
         MenuItem(
-            category=categories["Sides"],
-            name="Sauteed Spinach",
-            description="Spinach sautéed with garlic and olive oil",
-            price=5.99,
+            category=categories["Main Courses"],
+            name="Palak Paneer",
+            description="Cottage cheese cubes in spinach gravy",
+            price=14.99,
+            is_available=True,
+            special_item=False,
+            spiciness_level=1,
+            preparation_time_minutes=20
+        ),
+        MenuItem(
+            category=categories["Main Courses"],
+            name="Chana Masala",
+            description="Chickpeas cooked with onions, tomatoes and spices",
+            price=12.99,
+            is_available=True,
+            special_item=False,
+            spiciness_level=2,
+            preparation_time_minutes=18
+        ),
+        MenuItem(
+            category=categories["Main Courses"],
+            name="Lamb Rogan Josh",
+            description="Tender lamb in aromatic Kashmiri spices",
+            price=16.99,
+            is_available=True,
+            special_item=False,
+            spiciness_level=3,
+            preparation_time_minutes=30
+        ),
+        
+        # Bread
+        MenuItem(
+            category=categories["Bread"],
+            name="Naan",
+            description="Leavened flatbread baked in tandoor",
+            price=2.99,
             is_available=True,
             special_item=False,
             spiciness_level=0,
             preparation_time_minutes=8
         ),
         MenuItem(
-            category=categories["Sides"],
-            name="Truffle Fries",
-            description="French fries with truffle oil and Parmesan cheese",
-            price=7.99,
+            category=categories["Bread"],
+            name="Garlic Naan",
+            description="Naan bread with garlic and herbs",
+            price=3.99,
             is_available=True,
-            special_item=True,
+            special_item=False,
             spiciness_level=0,
             preparation_time_minutes=10
+        ),
+        MenuItem(
+            category=categories["Bread"],
+            name="Roti",
+            description="Whole wheat flatbread",
+            price=2.49,
+            is_available=True,
+            special_item=False,
+            spiciness_level=0,
+            preparation_time_minutes=6
+        ),
+        
+        # Rice Dishes
+        MenuItem(
+            category=categories["Rice Dishes"],
+            name="Vegetable Biryani",
+            description="Aromatic rice with mixed vegetables and spices",
+            price=13.99,
+            is_available=True,
+            special_item=False,
+            spiciness_level=2,
+            preparation_time_minutes=25
+        ),
+        MenuItem(
+            category=categories["Rice Dishes"],
+            name="Chicken Biryani",
+            description="Fragrant rice cooked with chicken and spices",
+            price=15.99,
+            is_available=True,
+            special_item=True,
+            spiciness_level=2,
+            preparation_time_minutes=30
+        ),
+        MenuItem(
+            category=categories["Rice Dishes"],
+            name="Jeera Rice",
+            description="Basmati rice with cumin seeds",
+            price=5.99,
+            is_available=True,
+            special_item=False,
+            spiciness_level=0,
+            preparation_time_minutes=15
         ),
         
         # Desserts
         MenuItem(
             category=categories["Desserts"],
-            name="Tiramisu",
-            description="Classic Italian dessert with layers of coffee-soaked ladyfingers and mascarpone cream",
-            price=8.99,
+            name="Gulab Jamun",
+            description="Deep-fried milk solids soaked in sugar syrup",
+            price=5.99,
             is_available=True,
             special_item=True,
             spiciness_level=0,
-            preparation_time_minutes=5
+            preparation_time_minutes=10
         ),
         MenuItem(
             category=categories["Desserts"],
-            name="Cannoli",
-            description="Crispy pastry shells filled with sweet ricotta cream",
-            price=7.99,
+            name="Kheer",
+            description="Rice pudding with cardamom and nuts",
+            price=5.99,
             is_available=True,
             special_item=False,
             spiciness_level=0,
-            preparation_time_minutes=5
-        ),
-        MenuItem(
-            category=categories["Desserts"],
-            name="Panna Cotta",
-            description="Italian custard with vanilla and berries",
-            price=8.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=5
-        ),
-        MenuItem(
-            category=categories["Desserts"],
-            name="Chocolate Lava Cake",
-            description="Warm chocolate cake with a molten center, served with vanilla ice cream",
-            price=9.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=12
+            preparation_time_minutes=15
         ),
         
         # Beverages
         MenuItem(
             category=categories["Beverages"],
-            name="Sparkling Water",
-            description="San Pellegrino sparkling water",
+            name="Masala Chai",
+            description="Spiced tea with milk",
             price=3.99,
             is_available=True,
             special_item=False,
             spiciness_level=0,
-            preparation_time_minutes=1
+            preparation_time_minutes=5
         ),
         MenuItem(
             category=categories["Beverages"],
-            name="Soda",
-            description="Assorted sodas",
-            price=2.99,
+            name="Mango Lassi",
+            description="Yogurt drink with mango pulp",
+            price=4.99,
             is_available=True,
             special_item=False,
             spiciness_level=0,
-            preparation_time_minutes=1
-        ),
-        MenuItem(
-            category=categories["Beverages"],
-            name="Iced Tea",
-            description="Fresh brewed iced tea",
-            price=3.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=2
-        ),
-        MenuItem(
-            category=categories["Beverages"],
-            name="Espresso",
-            description="Traditional Italian espresso",
-            price=3.99,
-            is_available=True,
-            special_item=False,
-            spiciness_level=0,
-            preparation_time_minutes=3
+            preparation_time_minutes=5
         ),
     ]
     
@@ -503,7 +332,7 @@ def seed_menu_items(session: Session):
 
 def seed_menu_item_ingredients(session: Session):
     """
-    Seed menu item ingredients.
+    Seed menu item ingredients relationships.
     
     Args:
         session: SQLAlchemy session
@@ -516,165 +345,132 @@ def seed_menu_item_ingredients(session: Session):
     
     # Define relationships
     menu_item_ingredients = [
-        # Bruschetta
+        # Samosa
         MenuItemIngredient(
-            menu_item_id=menu_items["Bruschetta"].id,
-            ingredient_id=ingredients["Tomato"].id,
+            menu_item_id=menu_items["Samosa"].id,
+            ingredient_id=ingredients["Wheat Flour"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Bruschetta"].id,
-            ingredient_id=ingredients["Garlic"].id,
+            menu_item_id=menu_items["Samosa"].id,
+            ingredient_id=ingredients["Potatoes"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Bruschetta"].id,
-            ingredient_id=ingredients["Basil"].id,
+            menu_item_id=menu_items["Samosa"].id,
+            ingredient_id=ingredients["Cumin"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Bruschetta"].id,
-            ingredient_id=ingredients["Olive Oil"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Bruschetta"].id,
-            ingredient_id=ingredients["Bread"].id,
+            menu_item_id=menu_items["Samosa"].id,
+            ingredient_id=ingredients["Coriander"].id,
             optional=False
         ),
         
-        # Garlic Bread
+        # Paneer Tikka
         MenuItemIngredient(
-            menu_item_id=menu_items["Garlic Bread"].id,
-            ingredient_id=ingredients["Garlic"].id,
+            menu_item_id=menu_items["Paneer Tikka"].id,
+            ingredient_id=ingredients["Paneer"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Garlic Bread"].id,
-            ingredient_id=ingredients["Butter"].id,
+            menu_item_id=menu_items["Paneer Tikka"].id,
+            ingredient_id=ingredients["Yogurt"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Garlic Bread"].id,
-            ingredient_id=ingredients["Bread"].id,
+            menu_item_id=menu_items["Paneer Tikka"].id,
+            ingredient_id=ingredients["Garam Masala"].id,
             optional=False
         ),
         
-        # Chicken Parmesan
+        # Butter Chicken
         MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
+            menu_item_id=menu_items["Butter Chicken"].id,
             ingredient_id=ingredients["Chicken"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            ingredient_id=ingredients["Tomato"].id,
+            menu_item_id=menu_items["Butter Chicken"].id,
+            ingredient_id=ingredients["Tomatoes"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            ingredient_id=ingredients["Mozzarella"].id,
+            menu_item_id=menu_items["Butter Chicken"].id,
+            ingredient_id=ingredients["Ghee"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            ingredient_id=ingredients["Parmesan"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            ingredient_id=ingredients["Pasta"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            ingredient_id=ingredients["Egg"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            ingredient_id=ingredients["Flour"].id,
+            menu_item_id=menu_items["Butter Chicken"].id,
+            ingredient_id=ingredients["Garam Masala"].id,
             optional=False
         ),
         
-        # Margherita Pizza
+        # Naan
         MenuItemIngredient(
-            menu_item_id=menu_items["Margherita Pizza"].id,
-            ingredient_id=ingredients["Tomato"].id,
+            menu_item_id=menu_items["Naan"].id,
+            ingredient_id=ingredients["Wheat Flour"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Margherita Pizza"].id,
-            ingredient_id=ingredients["Mozzarella"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Margherita Pizza"].id,
-            ingredient_id=ingredients["Basil"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Margherita Pizza"].id,
-            ingredient_id=ingredients["Olive Oil"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Margherita Pizza"].id,
-            ingredient_id=ingredients["Flour"].id,
+            menu_item_id=menu_items["Naan"].id,
+            ingredient_id=ingredients["Yogurt"].id,
             optional=False
         ),
         
-        # Vegetarian Pizza
+        # Vegetable Biryani
         MenuItemIngredient(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
-            ingredient_id=ingredients["Tomato"].id,
+            menu_item_id=menu_items["Vegetable Biryani"].id,
+            ingredient_id=ingredients["Rice"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
-            ingredient_id=ingredients["Mozzarella"].id,
+            menu_item_id=menu_items["Vegetable Biryani"].id,
+            ingredient_id=ingredients["Onions"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
-            ingredient_id=ingredients["Mushroom"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
-            ingredient_id=ingredients["Onion"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
-            ingredient_id=ingredients["Olive Oil"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
-            ingredient_id=ingredients["Flour"].id,
+            menu_item_id=menu_items["Vegetable Biryani"].id,
+            ingredient_id=ingredients["Garam Masala"].id,
             optional=False
         ),
         
-        # Tiramisu
+        # Gulab Jamun
         MenuItemIngredient(
-            menu_item_id=menu_items["Tiramisu"].id,
-            ingredient_id=ingredients["Egg"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Tiramisu"].id,
-            ingredient_id=ingredients["Sugar"].id,
-            optional=False
-        ),
-        MenuItemIngredient(
-            menu_item_id=menu_items["Tiramisu"].id,
+            menu_item_id=menu_items["Gulab Jamun"].id,
             ingredient_id=ingredients["Milk"].id,
             optional=False
         ),
         MenuItemIngredient(
-            menu_item_id=menu_items["Tiramisu"].id,
-            ingredient_id=ingredients["Cream"].id,
+            menu_item_id=menu_items["Gulab Jamun"].id,
+            ingredient_id=ingredients["Sugar"].id,
+            optional=False
+        ),
+        MenuItemIngredient(
+            menu_item_id=menu_items["Gulab Jamun"].id,
+            ingredient_id=ingredients["Cardamom"].id,
+            optional=False
+        ),
+        
+        # Masala Chai
+        MenuItemIngredient(
+            menu_item_id=menu_items["Masala Chai"].id,
+            ingredient_id=ingredients["Tea Leaves"].id,
+            optional=False
+        ),
+        MenuItemIngredient(
+            menu_item_id=menu_items["Masala Chai"].id,
+            ingredient_id=ingredients["Milk"].id,
+            optional=False
+        ),
+        MenuItemIngredient(
+            menu_item_id=menu_items["Masala Chai"].id,
+            ingredient_id=ingredients["Cardamom"].id,
+            optional=False
+        ),
+        MenuItemIngredient(
+            menu_item_id=menu_items["Masala Chai"].id,
+            ingredient_id=ingredients["Cinnamon"].id,
             optional=False
         ),
     ]
@@ -701,120 +497,118 @@ def seed_menu_item_dietary_restrictions(session: Session):
     menu_item_restrictions = [
         # Vegetarian options
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Bruschetta"].id,
+            menu_item_id=menu_items["Samosa"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Garlic Bread"].id,
+            menu_item_id=menu_items["Paneer Tikka"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Mozzarella Sticks"].id,
+            menu_item_id=menu_items["Pakora"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Caesar Salad"].id,
+            menu_item_id=menu_items["Palak Paneer"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Minestrone Soup"].id,
+            menu_item_id=menu_items["Chana Masala"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Caprese Salad"].id,
+            menu_item_id=menu_items["Naan"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Eggplant Parmesan"].id,
+            menu_item_id=menu_items["Garlic Naan"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Fettuccine Alfredo"].id,
+            menu_item_id=menu_items["Roti"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Margherita Pizza"].id,
+            menu_item_id=menu_items["Vegetable Biryani"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Vegetarian Pizza"].id,
+            menu_item_id=menu_items["Jeera Rice"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Quattro Formaggi"].id,
+            menu_item_id=menu_items["Gulab Jamun"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Roasted Potatoes"].id,
+            menu_item_id=menu_items["Kheer"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Grilled Vegetables"].id,
+            menu_item_id=menu_items["Masala Chai"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Sauteed Spinach"].id,
-            dietary_restriction_id=restrictions["vegetarian"].id
-        ),
-        MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Truffle Fries"].id,
-            dietary_restriction_id=restrictions["vegetarian"].id
-        ),
-        MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Tiramisu"].id,
-            dietary_restriction_id=restrictions["vegetarian"].id
-        ),
-        MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Cannoli"].id,
-            dietary_restriction_id=restrictions["vegetarian"].id
-        ),
-        MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Panna Cotta"].id,
-            dietary_restriction_id=restrictions["vegetarian"].id
-        ),
-        MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Chocolate Lava Cake"].id,
+            menu_item_id=menu_items["Mango Lassi"].id,
             dietary_restriction_id=restrictions["vegetarian"].id
         ),
         
         # Vegan options
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Bruschetta"].id,
+            menu_item_id=menu_items["Chana Masala"].id,
             dietary_restriction_id=restrictions["vegan"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Minestrone Soup"].id,
+            menu_item_id=menu_items["Roti"].id,
             dietary_restriction_id=restrictions["vegan"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Grilled Vegetables"].id,
-            dietary_restriction_id=restrictions["vegan"].id
-        ),
-        MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Sauteed Spinach"].id,
+            menu_item_id=menu_items["Jeera Rice"].id,
             dietary_restriction_id=restrictions["vegan"].id
         ),
         
         # Gluten-free options
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Grilled Salmon"].id,
+            menu_item_id=menu_items["Butter Chicken"].id,
             dietary_restriction_id=restrictions["gluten_free"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Caprese Salad"].id,
+            menu_item_id=menu_items["Palak Paneer"].id,
             dietary_restriction_id=restrictions["gluten_free"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Grilled Vegetables"].id,
+            menu_item_id=menu_items["Chana Masala"].id,
             dietary_restriction_id=restrictions["gluten_free"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Sauteed Spinach"].id,
+            menu_item_id=menu_items["Lamb Rogan Josh"].id,
             dietary_restriction_id=restrictions["gluten_free"].id
         ),
         MenuItemDietaryRestriction(
-            menu_item_id=menu_items["Panna Cotta"].id,
+            menu_item_id=menu_items["Vegetable Biryani"].id,
             dietary_restriction_id=restrictions["gluten_free"].id
+        ),
+        MenuItemDietaryRestriction(
+            menu_item_id=menu_items["Chicken Biryani"].id,
+            dietary_restriction_id=restrictions["gluten_free"].id
+        ),
+        MenuItemDietaryRestriction(
+            menu_item_id=menu_items["Jeera Rice"].id,
+            dietary_restriction_id=restrictions["gluten_free"].id
+        ),
+        
+        # Halal options
+        MenuItemDietaryRestriction(
+            menu_item_id=menu_items["Butter Chicken"].id,
+            dietary_restriction_id=restrictions["halal"].id
+        ),
+        MenuItemDietaryRestriction(
+            menu_item_id=menu_items["Lamb Rogan Josh"].id,
+            dietary_restriction_id=restrictions["halal"].id
+        ),
+        MenuItemDietaryRestriction(
+            menu_item_id=menu_items["Chicken Biryani"].id,
+            dietary_restriction_id=restrictions["halal"].id
         ),
     ]
     
@@ -839,64 +633,28 @@ def seed_special_pricing(session: Session):
     special_pricing = [
         # Current specials
         SpecialPricing(
-            menu_item_id=menu_items["Chicken Parmesan"].id,
-            special_price=16.99,
+            menu_item_id=menu_items["Butter Chicken"].id,
+            special_price=13.99,
             description="Weekend Special",
             start_date=now - timedelta(days=1),
             end_date=now + timedelta(days=2),
             active=True
         ),
         SpecialPricing(
-            menu_item_id=menu_items["Lasagna"].id,
-            special_price=14.99,
-            description="Chef's Special",
+            menu_item_id=menu_items["Paneer Tikka"].id,
+            special_price=6.99,
+            description="Starter Special",
             start_date=now - timedelta(days=3),
             end_date=now + timedelta(days=4),
             active=True
         ),
         SpecialPricing(
-            menu_item_id=menu_items["Tiramisu"].id,
-            special_price=7.49,
+            menu_item_id=menu_items["Gulab Jamun"].id,
+            special_price=4.99,
             description="Dessert of the Week",
             start_date=now - timedelta(days=2),
             end_date=now + timedelta(days=5),
             active=True
-        ),
-        
-        # Future specials
-        SpecialPricing(
-            menu_item_id=menu_items["Margherita Pizza"].id,
-            special_price=12.99,
-            description="Pizza Night Special",
-            start_date=now + timedelta(days=7),
-            end_date=now + timedelta(days=14),
-            active=True
-        ),
-        SpecialPricing(
-            menu_item_id=menu_items["Fettuccine Alfredo"].id,
-            special_price=12.99,
-            description="Pasta Week",
-            start_date=now + timedelta(days=10),
-            end_date=now + timedelta(days=17),
-            active=True
-        ),
-        
-        # Past specials
-        SpecialPricing(
-            menu_item_id=menu_items["Calamari"].id,
-            special_price=10.99,
-            description="Appetizer Special",
-            start_date=now - timedelta(days=30),
-            end_date=now - timedelta(days=23),
-            active=False
-        ),
-        SpecialPricing(
-            menu_item_id=menu_items["Grilled Salmon"].id,
-            special_price=19.99,
-            description="Fish Friday",
-            start_date=now - timedelta(days=14),
-            end_date=now - timedelta(days=7),
-            active=False
         ),
     ]
     
@@ -914,20 +672,11 @@ def seed_tables(session: Session):
     """
     tables = [
         RestaurantTable(table_number="1", capacity=2, location="Window"),
-        RestaurantTable(table_number="2", capacity=2, location="Window"),
-        RestaurantTable(table_number="3", capacity=4, location="Window"),
-        RestaurantTable(table_number="4", capacity=4, location="Center"),
-        RestaurantTable(table_number="5", capacity=4, location="Center"),
-        RestaurantTable(table_number="6", capacity=6, location="Center"),
-        RestaurantTable(table_number="7", capacity=6, location="Corner"),
-        RestaurantTable(table_number="8", capacity=8, location="Corner"),
-        RestaurantTable(table_number="9", capacity=2, location="Bar"),
-        RestaurantTable(table_number="10", capacity=2, location="Bar"),
-        RestaurantTable(table_number="11", capacity=4, location="Patio"),
-        RestaurantTable(table_number="12", capacity=4, location="Patio"),
-        RestaurantTable(table_number="13", capacity=6, location="Patio"),
-        RestaurantTable(table_number="14", capacity=8, location="Private Room"),
-        RestaurantTable(table_number="15", capacity=10, location="Private Room"),
+        RestaurantTable(table_number="2", capacity=4, location="Center"),
+        RestaurantTable(table_number="3", capacity=6, location="Corner"),
+        RestaurantTable(table_number="4", capacity=8, location="Private Room"),
+        RestaurantTable(table_number="5", capacity=2, location="Patio"),
+        RestaurantTable(table_number="6", capacity=4, location="Patio"),
     ]
     
     for table in tables:
@@ -937,7 +686,7 @@ def seed_tables(session: Session):
 
 def seed_reservations(session: Session):
     """
-    Seed reservations.
+    Seed reservations with reduced data.
     
     Args:
         session: SQLAlchemy session
@@ -948,35 +697,28 @@ def seed_reservations(session: Session):
     # Define reservations
     now = datetime.now()
     
-    # Generate reservation times for the next week
-    reservation_times = []
-    for day in range(7):
-        for hour in [18, 19, 20]:  # 6pm, 7pm, 8pm
-            reservation_times.append(
-                datetime(now.year, now.month, now.day, hour, 0) + timedelta(days=day)
-            )
-    
-    # Create mock customer data
+    # Generate 5 reservations for the next few days
     customer_names = [
-        "John Smith", "Jane Doe", "Michael Johnson", "Emily Williams",
-        "David Brown", "Sarah Miller", "Robert Wilson", "Jennifer Moore",
-        "William Taylor", "Linda Anderson", "James Thomas", "Patricia Jackson",
-        "Christopher White", "Barbara Harris", "Matthew Martin", "Elizabeth Thompson"
+        "Raj Patel", "Priya Sharma", "Vikram Singh", 
+        "Ananya Desai", "Arjun Mehta"
     ]
     
-    # Generate some reservations
+    reservation_times = [
+        datetime(now.year, now.month, now.day, 18, 0) + timedelta(days=i)
+        for i in range(1, 6)
+    ]
+    
     reservations = []
-    for i, time in enumerate(reservation_times[:15]):  # Create 15 reservations
-        customer_index = i % len(customer_names)
-        party_size = random.randint(2, 8)
+    for i, time in enumerate(reservation_times):
+        party_size = random.randint(2, 6)
         
         reservation = Reservation(
-            customer_name=customer_names[customer_index],
+            customer_name=customer_names[i],
             customer_phone=f"555-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
-            customer_email=f"{customer_names[customer_index].lower().replace(' ', '.')}@example.com",
+            customer_email=f"{customer_names[i].lower().replace(' ', '.')}@example.com",
             party_size=party_size,
             reservation_date=time,
-            special_requests="Window seat if possible" if i % 5 == 0 else None,
+            special_requests="Window seat if possible" if i % 2 == 0 else None,
             status=ReservationStatus.CONFIRMED
         )
         
@@ -993,53 +735,6 @@ def seed_reservations(session: Session):
                     break
         
         reservation.tables = assigned_tables
-        reservations.append(reservation)
-    
-    # Add some past reservations
-    for i in range(5):
-        past_date = now - timedelta(days=i+1, hours=random.randint(1, 5))
-        customer_index = (i + 10) % len(customer_names)
-        party_size = random.randint(2, 6)
-        
-        reservation = Reservation(
-            customer_name=customer_names[customer_index],
-            customer_phone=f"555-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
-            customer_email=f"{customer_names[customer_index].lower().replace(' ', '.')}@example.com",
-            party_size=party_size,
-            reservation_date=past_date,
-            status=ReservationStatus.COMPLETED
-        )
-        
-        # Add tables to the reservation
-        assigned_tables = []
-        remaining_capacity = party_size
-        
-        # Find tables to accommodate the party size
-        for table in sorted(tables, key=lambda t: t.capacity):
-            if table not in assigned_tables and remaining_capacity > 0:
-                assigned_tables.append(table)
-                remaining_capacity -= table.capacity
-                if remaining_capacity <= 0:
-                    break
-        
-        reservation.tables = assigned_tables
-        reservations.append(reservation)
-    
-    # Add some canceled reservations
-    for i in range(3):
-        future_date = now + timedelta(days=i+10, hours=random.randint(1, 5))
-        customer_index = (i + 5) % len(customer_names)
-        party_size = random.randint(2, 4)
-        
-        reservation = Reservation(
-            customer_name=customer_names[customer_index],
-            customer_phone=f"555-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
-            customer_email=f"{customer_names[customer_index].lower().replace(' ', '.')}@example.com",
-            party_size=party_size,
-            reservation_date=future_date,
-            status=ReservationStatus.CANCELED
-        )
-        
         reservations.append(reservation)
     
     for reservation in reservations:

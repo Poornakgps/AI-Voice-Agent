@@ -1,7 +1,7 @@
 """
 Twilio webhook handlers for voice interactions.
 """
-from fastapi import APIRouter, Request, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status, Depends
 from fastapi.responses import PlainTextResponse
 import logging
 from typing import Dict, Any, Optional
@@ -9,45 +9,25 @@ import json
 import hashlib
 import hmac
 import base64
+from sqlalchemy.orm import Session
+
 from app.config import settings
+from app.core.agent import RestaurantAgent
+from app.voice.twiml_generator import TwiMLGenerator
+from app.voice.stt import transcribe_audio
+from database import get_db_dependency
 
 # Set up logger
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# TwiML templates (would typically be in a template file)
-TWIML_WELCOME = """
-<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say>Welcome to our restaurant AI assistant. How may I help you today?</Say>
-    <Record action="/webhook/transcribe" maxLength="60" playBeep="true" />
-</Response>
-"""
+# Create TwiML generator
+twiml_generator = TwiMLGenerator()
 
-TWIML_RESPONSE = """
-<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say>{message}</Say>
-    <Record action="/webhook/transcribe" maxLength="60" playBeep="true" />
-</Response>
-"""
-
-TWIML_GOODBYE = """
-<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say>Thank you for calling. Goodbye!</Say>
-    <Hangup />
-</Response>
-"""
-
-TWIML_ERROR = """
-<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say>I'm sorry, we're experiencing technical difficulties. Please try again later.</Say>
-    <Hangup />
-</Response>
-"""
+# Active call sessions (in-memory storage for development)
+# In production, this would be stored in a database or Redis
+active_sessions = {}
 
 def validate_twilio_request(request: Request) -> bool:
     """
@@ -94,13 +74,32 @@ def validate_twilio_request(request: Request) -> bool:
     # Compare signatures
     return hmac.compare_digest(expected_signature, twilio_signature)
 
+def get_or_create_agent(call_sid: str, db: Session) -> RestaurantAgent:
+    """
+    Get or create an agent for a call.
+    
+    Args:
+        call_sid: Twilio call SID
+        db: Database session
+        
+    Returns:
+        RestaurantAgent: Agent instance
+    """
+    if call_sid not in active_sessions:
+        agent = RestaurantAgent(db)
+        active_sessions[call_sid] = agent
+        logger.info(f"Created new agent for call {call_sid}")
+    
+    return active_sessions[call_sid]
+
 @router.post("/voice", response_class=PlainTextResponse)
-async def voice_webhook(request: Request):
+async def voice_webhook(request: Request, db: Session = Depends(get_db_dependency)):
     """
     Handle incoming voice calls from Twilio.
     
     Args:
         request: The incoming FastAPI request.
+        db: Database session
         
     Returns:
         PlainTextResponse: TwiML response.
@@ -116,16 +115,20 @@ async def voice_webhook(request: Request):
     caller = form_data.get("From", "unknown")
     logger.info(f"Incoming call received: {call_sid} from {caller}")
     
+    # Create agent for the call
+    get_or_create_agent(call_sid, db)
+    
     # Return welcome TwiML
-    return PlainTextResponse(content=TWIML_WELCOME, media_type="application/xml")
+    return PlainTextResponse(content=twiml_generator.welcome_response(), media_type="application/xml")
 
 @router.post("/transcribe", response_class=PlainTextResponse)
-async def transcribe_webhook(request: Request):
+async def transcribe_webhook(request: Request, db: Session = Depends(get_db_dependency)):
     """
     Handle transcription of voice recordings from Twilio.
     
     Args:
         request: The incoming FastAPI request.
+        db: Database session
         
     Returns:
         PlainTextResponse: TwiML response.
@@ -143,24 +146,35 @@ async def transcribe_webhook(request: Request):
     
     logger.info(f"Recording received: {recording_sid} from call {call_sid}")
     
-    # In a real implementation, you would:
-    # 1. Download the recording
-    # 2. Transcribe it using a speech-to-text service
-    # 3. Process the transcription with your agent
-    # 4. Generate a response
+    # Get agent for the call
+    agent = get_or_create_agent(call_sid, db)
     
-    # For now, we just return a mock response
-    message = "I understand you're asking about our menu. We have a variety of dishes including pasta, pizza, and salads. Is there something specific you'd like to know?"
-    
-    # Mock "goodbye" detection - in a real implementation, this would be based on NLU
-    if "goodbye" in recording_url or "bye" in recording_url or "thank you" in recording_url:
-        return PlainTextResponse(content=TWIML_GOODBYE, media_type="application/xml")
-    
-    # Return response TwiML
-    return PlainTextResponse(
-        content=TWIML_RESPONSE.format(message=message),
-        media_type="application/xml"
-    )
+    # Transcribe the recording
+    if recording_url:
+        try:
+            transcript = await transcribe_audio(recording_url)
+            logger.info(f"Transcription: {transcript}")
+            
+            # Process the transcript with the agent
+            agent_response = agent.process_message(transcript)
+            
+            # Generate TwiML response
+            return PlainTextResponse(
+                content=twiml_generator.agent_response(agent_response),
+                media_type="application/xml"
+            )
+        except Exception as e:
+            logger.error(f"Error processing recording: {str(e)}")
+            return PlainTextResponse(
+                content=twiml_generator.error_response("I'm sorry, I couldn't understand that. Could you try again?"),
+                media_type="application/xml"
+            )
+    else:
+        logger.warning(f"No recording URL for call {call_sid}")
+        return PlainTextResponse(
+            content=twiml_generator.fallback_response(),
+            media_type="application/xml"
+        )
 
 @router.post("/status", status_code=status.HTTP_200_OK)
 async def status_webhook(request: Request):
@@ -185,7 +199,11 @@ async def status_webhook(request: Request):
     
     logger.info(f"Call status update: {call_sid} is now {call_status}")
     
-    # In a real implementation, you would update your database with the call status
+    # Clean up resources if call is completed or failed
+    if call_status in ["completed", "failed", "busy", "no-answer"]:
+        if call_sid in active_sessions:
+            del active_sessions[call_sid]
+            logger.info(f"Removed agent for completed call {call_sid}")
     
     return {"status": "received"}
 
@@ -214,4 +232,40 @@ async def fallback_webhook(request: Request):
     logger.error(f"Twilio error in call {call_sid}: {error_code} - {error_msg}")
     
     # Return error TwiML
-    return PlainTextResponse(content=TWIML_ERROR, media_type="application/xml")
+    return PlainTextResponse(content=twiml_generator.error_response(), media_type="application/xml")
+
+@router.post("/dtmf", response_class=PlainTextResponse)
+async def dtmf_webhook(request: Request, db: Session = Depends(get_db_dependency)):
+    """
+    Handle DTMF (touch-tone) input from Twilio.
+    
+    Args:
+        request: The incoming FastAPI request.
+        db: Database session
+        
+    Returns:
+        PlainTextResponse: TwiML response.
+    """
+    # Validate the request (in production)
+    if not settings.DEBUG and not validate_twilio_request(request):
+        logger.warning("Invalid Twilio signature")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
+    
+    # Process the DTMF input
+    form_data = await request.form()
+    call_sid = form_data.get("CallSid", "unknown")
+    digits = form_data.get("Digits", "")
+    
+    logger.info(f"DTMF input received: {digits} from call {call_sid}")
+    
+    # Get agent for the call
+    agent = get_or_create_agent(call_sid, db)
+    
+    # Process the DTMF input with the agent
+    agent_response = agent.process_message(f"I pressed {digits}")
+    
+    # Generate TwiML response
+    return PlainTextResponse(
+        content=twiml_generator.agent_response(agent_response),
+        media_type="application/xml"
+    )

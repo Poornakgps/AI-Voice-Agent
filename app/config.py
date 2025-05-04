@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     LOCAL_STORAGE_PATH: str = "./storage"
     GCS_BUCKET_NAME: Optional[str] = None
     
+    # Ngrok settings - ADD THIS LINE
+    NGROK_AUTHTOKEN: Optional[str] = None
+    
     # Validators
     @field_validator("LOG_LEVEL")
     @classmethod

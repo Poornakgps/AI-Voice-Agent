@@ -25,9 +25,8 @@ class Settings(BaseSettings):
     OPENAI_ORG_ID: Optional[str] = None
     
     # Twilio settings
-    TWILIO_ACCOUNT_SID: Optional[str] = None
-    TWILIO_AUTH_TOKEN: Optional[str] = None
-    TWILIO_PHONE_NUMBER: Optional[str] = None
+    TWILIO_API_KEY: Optional[str] = None
+    TWILIO_API_SECRET: Optional[str] = None
     
     # Database settings
     DATABASE_URL: str = "sqlite:///./test.db"

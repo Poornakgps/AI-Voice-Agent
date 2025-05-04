@@ -31,8 +31,8 @@ active_sessions = {}
 
 def validate_twilio_request(request: Request) -> bool:
     """Validate that the request is coming from Twilio."""
-    # Skip validation in debug mode or without auth token
-    if settings.DEBUG or not settings.TWILIO_AUTH_TOKEN:
+    # Skip validation in debug mode or without credentials
+    if settings.DEBUG or not settings.TWILIO_API_SECRET:
         return True
     
     # Get the Twilio signature from the headers
@@ -53,10 +53,10 @@ def validate_twilio_request(request: Request) -> bool:
         validation_string += k + v
     
     # Compute the HMAC-SHA1 signature
-    auth_token = settings.TWILIO_AUTH_TOKEN
+    api_secret = settings.TWILIO_API_SECRET
     expected_signature = base64.b64encode(
         hmac.new(
-            auth_token.encode("utf-8"),
+            api_secret.encode("utf-8"),
             validation_string.encode("utf-8"),
             hashlib.sha1
         ).digest()

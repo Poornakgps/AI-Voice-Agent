@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Interactive database explorer for the Voice AI Restaurant Agent.
 
@@ -9,10 +8,8 @@ import sys
 from datetime import datetime
 import cmd
 
-# Add the project root to the Python path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-# Import database modules
 from database import init_db, db_session
 from database.models import (
     MenuCategory, MenuItem, Ingredient, DietaryRestriction,
@@ -323,10 +320,8 @@ Type 'exit' or 'quit' to exit.
     def do_help(self, arg):
         """List available commands with help text."""
         if arg:
-            # Show help for specific command
             super().do_help(arg)
         else:
-            # Show general help
             print("\nAvailable Commands:")
             print("-" * 50)
             print("categories       - List all menu categories")

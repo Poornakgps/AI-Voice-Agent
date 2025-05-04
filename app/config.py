@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     # Ngrok settings - ADD THIS LINE
     NGROK_AUTHTOKEN: Optional[str] = None
     
+    # Google Cloud settings
+    GOOGLE_CLOUD_PROJECT: Optional[str] = None
+    GOOGLE_CLOUD_CREDENTIALS: Optional[str] = None
+    GOOGLE_CLOUD_REGION: str = "us-central1"
+    
     # Validators
     @field_validator("LOG_LEVEL")
     @classmethod

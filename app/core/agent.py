@@ -113,27 +113,19 @@ class RestaurantAgent:
         logger.info("Restaurant agent initialized")
     
     def _initialize_client(self):
-        """
-        Initialize the OpenAI client.
-        
-        Returns:
-            OpenAI client or mock
-        """
-        # Use mock client for development without API key
-        if settings.DEBUG or not settings.OPENAI_API_KEY:
-            logger.info("Using mock OpenAI client")
-            return MockOpenAIClient()
-        
-        # Use real client for production with API key
-        try:
+        """Initialize the OpenAI client."""
+        # Use real OpenAI client when API key is available
+        if settings.OPENAI_API_KEY:
             import openai
             client = openai.OpenAI(
                 api_key=settings.OPENAI_API_KEY,
                 organization=settings.OPENAI_ORG_ID
             )
+            logger.info("Using real OpenAI client")
             return client
-        except ImportError:
-            logger.warning("OpenAI package not installed or misconfigured, falling back to mock")
+        else:
+            # Fall back to mock for development without API key
+            logger.warning("No OpenAI API key found, using mock client")
             return MockOpenAIClient()
     
     def _initialize_conversation(self):

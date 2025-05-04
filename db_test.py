@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Database testing script for the Voice AI Restaurant Agent.
 
@@ -9,7 +8,7 @@ import os
 import sys
 from datetime import datetime
 
-# Add the project root to the Python path
+
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # Import database modules
@@ -55,12 +54,10 @@ def test_menu_items():
     """Test fetching menu items."""
     print_separator("Menu Items by Category")
     with db_session() as session:
-        # Get categories
         categories = get_menu_categories(session)
         category_id = categories[0]["id"]
         category_name = categories[0]["name"]
         
-        # Get items for the first category
         items = get_menu_items_by_category(session, category_id)
         print(f"Found {len(items)} items in category '{category_name}':")
         for item in items:
@@ -104,11 +101,9 @@ def test_order_calculation():
     """Test order calculation."""
     print_separator("Order Calculation")
     with db_session() as session:
-        # Get some menu items
         items = session.query(MenuItem).limit(3).all()
         item_ids = [item.id for item in items]
         
-        # Create an order
         order_items = [
             {"id": item_ids[0], "quantity": 2},
             {"id": item_ids[1], "quantity": 1},
@@ -128,7 +123,6 @@ def test_order_calculation():
 def test_reservation_availability():
     """Test reservation availability."""
     print_separator("Reservation Availability")
-    # Tomorrow at 7 PM
     tomorrow = datetime.now()
     date_str = f"{tomorrow.year}-{tomorrow.month:02d}-{tomorrow.day+1:02d}"
     time_str = "19:00"
@@ -152,7 +146,6 @@ def test_reservation_availability():
 def test_make_reservation():
     """Test making a reservation."""
     print_separator("Make Reservation")
-    # Tomorrow at 6 PM
     tomorrow = datetime.now()
     date_str = f"{tomorrow.year}-{tomorrow.month:02d}-{tomorrow.day+1:02d}"
     time_str = "18:00"

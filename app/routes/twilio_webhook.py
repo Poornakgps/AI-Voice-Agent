@@ -30,17 +30,9 @@ twiml_generator = TwiMLGenerator()
 active_sessions = {}
 
 def validate_twilio_request(request: Request) -> bool:
-    """
-    Validate that the request is coming from Twilio.
-    
-    Args:
-        request: The incoming FastAPI request.
-        
-    Returns:
-        bool: True if the request is valid, False otherwise.
-    """
-    # Skip validation in debug mode
-    if settings.DEBUG:
+    """Validate that the request is coming from Twilio."""
+    # Skip validation in debug mode or without auth token
+    if settings.DEBUG or not settings.TWILIO_AUTH_TOKEN:
         return True
     
     # Get the Twilio signature from the headers
@@ -55,14 +47,13 @@ def validate_twilio_request(request: Request) -> bool:
     # Sort the form data parameters
     sorted_form_data = sorted(form_data.items())
     
-    # Create the validation string (url + sorted form params)
+    # Create the validation string
     validation_string = url
     for k, v in sorted_form_data:
         validation_string += k + v
     
     # Compute the HMAC-SHA1 signature
-    # In a real implementation, this would be the actual auth token
-    auth_token = settings.TWILIO_AUTH_TOKEN or "dummy_token"
+    auth_token = settings.TWILIO_AUTH_TOKEN
     expected_signature = base64.b64encode(
         hmac.new(
             auth_token.encode("utf-8"),

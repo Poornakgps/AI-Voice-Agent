@@ -33,7 +33,6 @@ class MockMessage:
         self.role = content.get("role", "assistant")
         self.tool_calls = []
         
-        # Check if there are tool calls in the content
         if "tool_call" in content:
             self.tool_calls = [MockToolCall(content["tool_call"])]
 
@@ -74,7 +73,6 @@ class MockChatCompletions:
         """
         logger.info(f"Mock ChatCompletions.create called with {len(messages)} messages")
         
-        # Get the last user message
         user_message = next((m for m in reversed(messages) if m.get("role") == "user"), None)
         
         if not user_message:
@@ -82,12 +80,10 @@ class MockChatCompletions:
         
         user_text = user_message.get("content", "").lower()
         
-        # Check for tool-related queries and return tool calls when appropriate
         result = self._handle_tool_calls(user_text, tools)
         if result:
             return result
         
-        # Handle general queries with canned responses
         response_content = self._get_canned_response(user_text)
         
         return MockResponse({"content": response_content})
@@ -110,7 +106,6 @@ class MockChatCompletions:
         if not tools:
             return None
         
-        # Check for menu-related queries
         if re.search(r'menu|categories|what (do you|you guys) (have|offer)|what.s on the menu', user_text):
             return MockResponse({
                 "content": "Let me check our menu categories for you.",
@@ -120,7 +115,6 @@ class MockChatCompletions:
                 }
             })
         
-        # Check for specific menu category queries
         category_match = re.search(r'(what|any|show).*(starters|appetizers|main course|desserts|drinks)', user_text)
         if category_match:
             category = category_match.group(2).lower()
@@ -141,7 +135,6 @@ class MockChatCompletions:
                 }
             })
         
-        # Check for dietary restriction queries
         diet_match = re.search(r'(vegetarian|vegan|gluten.free|dairy.free|nut.free|halal|kosher)', user_text)
         if diet_match:
             diet_type = diet_match.group(1).lower().replace(" ", "_")
@@ -154,7 +147,6 @@ class MockChatCompletions:
                 }
             })
         
-        # Check for search queries
         search_match = re.search(r'(do you have|is there|looking for|want|i.d like) .*?(chicken|curry|paneer|biryani|naan|tandoori|tikka)', user_text)
         if search_match:
             search_term = search_match.group(2)
@@ -167,7 +159,6 @@ class MockChatCompletions:
                 }
             })
         
-        # Check for special pricing queries
         if re.search(r'special|offer|discount|deal|promotion', user_text):
             return MockResponse({
                 "content": "Let me check our current specials for you.",
@@ -177,22 +168,18 @@ class MockChatCompletions:
                 }
             })
         
-        # Check for reservation queries
         reservation_match = re.search(r'(book|reserve|reservation).*(table|spot|seat|reservation).*?(\d+).*?(people|person|guests?)', user_text)
         if reservation_match:
             party_size = int(reservation_match.group(3))
             
-            # Extract date if present, otherwise use tomorrow
             tomorrow = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
             tomorrow = tomorrow.replace(day=tomorrow.day + 1)
             date_str = tomorrow.strftime("%Y-%m-%d")
             
             date_match = re.search(r'(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)', user_text)
             if date_match:
-                # For the mock, we'll just use tomorrow regardless of the specific day mentioned
                 pass
             
-            # Extract time if present, otherwise use 7 PM
             time_str = "19:00"
             time_match = re.search(r'(\d{1,2})(?::(\d{2}))?\s*(am|pm)', user_text, re.IGNORECASE)
             if time_match:
@@ -219,7 +206,6 @@ class MockChatCompletions:
                 }
             })
         
-        # If no tool matches, return None to fall back to regular response
         return None
     
     def _get_canned_response(self, user_text: str) -> str:
@@ -232,35 +218,27 @@ class MockChatCompletions:
         Returns:
             Canned response text
         """
-        # Greetings
         if re.search(r'^(hi|hello|hey|greetings|howdy)', user_text):
             return "Hello! Thank you for calling Taste of India. How can I assist you today?"
         
-        # Hours of operation
         if re.search(r'(hour|time|when).*(open|close|opening|closing)', user_text):
             return "We're open daily from 11:00 AM to 10:00 PM."
         
-        # Location
         if re.search(r'(where|location|address|direction)', user_text):
             return "We're located at 123 Culinary Street in Foodville. We're just across from Central Park, near the downtown shopping district."
         
-        # Parking
         if re.search(r'parking', user_text):
             return "Yes, we have a parking lot behind our restaurant with free parking for customers. There's also street parking available."
         
-        # Takeout or delivery
         if re.search(r'(takeout|take.out|take.away|delivery|pick.up)', user_text):
             return "Yes, we offer both takeout and delivery services. You can place an order by phone or through our website. Delivery is available within a 5-mile radius."
         
-        # Popular dishes
         if re.search(r'(popular|best|recommend|signature|specialty)', user_text):
             return "Our most popular dishes include Butter Chicken, Paneer Tikka, and our special Vegetable Biryani. Our Chef's Special changes weekly, so be sure to ask about it when you visit!"
         
-        # Spice level
         if re.search(r'(spicy|spice|hot|mild|medium)', user_text):
             return "We can adjust the spice level of most dishes to your preference, from mild to very spicy. Just let us know your preference when ordering."
         
-        # Default response for anything else
         return "Thank you for your question. As an AI assistant for Taste of India, I'm here to help with menu information, reservations, and general restaurant questions. How else can I assist you today?"
 
 class MockOpenAIClient:

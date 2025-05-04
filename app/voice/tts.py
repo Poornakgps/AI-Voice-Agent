@@ -16,26 +16,15 @@ from app.core.models import VoiceSettings, TTSResponse
 logger = logging.getLogger(__name__)
 
 async def synthesize_speech(text: str, voice_settings: Optional[VoiceSettings] = None) -> TTSResponse:
-    """
-    Synthesize speech from text.
-    
-    Args:
-        text: Text to synthesize
-        voice_settings: Voice settings
-        
-    Returns:
-        TTSResponse: Synthesized speech
-    """
+    """Synthesize speech from text."""
     logger.info(f"Synthesizing speech: {text[:50]}{'...' if len(text) > 50 else ''}")
     
-    # In development/testing mode with no API keys, use mock audio
-    if settings.DEBUG or not settings.OPENAI_API_KEY:
-        logger.info("Using mock TTS in development mode")
+    if not settings.GOOGLE_CLOUD_CREDENTIALS:
+        logger.warning("No Google Cloud credentials found, using mock TTS")
         return _get_mock_tts_response(text)
     
     try:
-        # In a real implementation, we would use a text-to-speech service
-        # For example, with Google Cloud TTS
+        # Use Google Cloud TTS
         return await _synthesize_with_google_cloud(text, voice_settings)
     except Exception as e:
         logger.error(f"Error synthesizing speech: {str(e)}")

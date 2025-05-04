@@ -16,20 +16,11 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 async def transcribe_audio(audio_url: str) -> str:
-    """
-    Transcribe audio from a URL.
-    
-    Args:
-        audio_url: URL to the audio file
-        
-    Returns:
-        Transcribed text
-    """
+    """Transcribe audio from a URL."""
     logger.info(f"Transcribing audio from URL: {audio_url}")
     
-    # In development/testing mode with no API keys, use mock transcriptions
-    if settings.DEBUG or not settings.OPENAI_API_KEY:
-        logger.info("Using mock transcription in development mode")
+    if not settings.OPENAI_API_KEY:
+        logger.warning("No OpenAI API key found, using mock transcription")
         return _get_mock_transcription(audio_url)
     
     try:
@@ -39,8 +30,7 @@ async def transcribe_audio(audio_url: str) -> str:
             response.raise_for_status()
             audio_data = response.content
         
-        # In a real implementation, we would use a speech-to-text service
-        # For example, with OpenAI's Whisper API
+        # Use OpenAI's Whisper API
         return await _transcribe_with_openai(audio_data)
     except Exception as e:
         logger.error(f"Error transcribing audio: {str(e)}")

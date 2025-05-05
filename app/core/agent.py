@@ -416,18 +416,15 @@ class RestaurantAgent:
         
         # Process with OpenAI (or mock)
         try:
-            # Call model with tools
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",  # Would be replaced with settings.OPENAI_MODEL in production
+                model="gpt-4o-mini", 
                 messages=messages,
                 tools=self.tools,
                 tool_choice="auto"
             )
             
-            # Process response
             message = response.choices[0].message
-            
-            # Handle cases where message.content might be None
+
             message_content = message.content or ""
             
 

@@ -87,7 +87,10 @@ async def test_openai():
     try:
         import openai
         # Initialize client without organization ID
-        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        client = openai.OpenAI(
+            api_key=settings.OPENAI_API_KEY, 
+            organization=settings.OPENAI_ORG_ID
+        )
         
         # Make a simple API call
         response = client.chat.completions.create(

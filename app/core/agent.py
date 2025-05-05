@@ -430,27 +430,22 @@ class RestaurantAgent:
             # Handle cases where message.content might be None
             message_content = message.content or ""
             
-            # Check if tool calls are present
+
             if hasattr(message, 'tool_calls') and message.tool_calls:
                 # Add the assistant message with tool calls to conversation
                 self.state.conversation.add_message("assistant", message_content)
                 
-                # Process tool calls
                 for tool_call in message.tool_calls:
                     function_name = tool_call.function.name
                     function_args = json.loads(tool_call.function.arguments)
                     
-                    # Execute the tool
                     tool_result = self._execute_tool(function_name, function_args)
                     
-                    # Add tool result to conversation as a simple message
-                    # This is compatible with the mock implementation
                     self.state.conversation.add_message(
                         "assistant", 
                         f"Used tool {function_name} with result: {json.dumps(tool_result)}"
                     )
                 
-                # Get menu information from the tools directly since we're using mocks
                 if "menu" in user_input.lower() or "categories" in user_input.lower():
                     categories = menu_query.get_menu_categories(self.db_session)
                     category_names = [cat["name"] for cat in categories]
@@ -460,13 +455,10 @@ class RestaurantAgent:
                     veg_names = [item["name"] for item in veg_items[:5]]
                     final_content = f"We have several vegetarian options including {', '.join(veg_names)} and more. Would you like details on any of these?"
                 else:
-                    # Generic response for other queries
                     final_content = "I've looked that up for you. Is there anything specific you'd like to know about our restaurant?"
             else:
-                # No tools were called, use the direct response
                 final_content = message_content
             
-            # Add assistant message to conversation
             self.state.conversation.add_message("assistant", final_content)
             
             return final_content
@@ -475,7 +467,6 @@ class RestaurantAgent:
             error_msg = f"Error processing message: {str(e)}"
             logger.error(error_msg)
             
-            # Add error response to conversation
             error_response = "I'm sorry, I encountered an error processing your request. Please try again."
             self.state.conversation.add_message("assistant", error_response)
             
@@ -485,7 +476,6 @@ class RestaurantAgent:
         """Reset the conversation while keeping the system prompt."""
         system_message = None
         
-        # Save system message if it exists
         for message in self.state.conversation.messages:
             if message.role == "system":
                 system_message = message

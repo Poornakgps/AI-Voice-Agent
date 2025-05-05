@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Simple script to test your Twilio webhooks locally using environment variables.
+Simple script to test your Twilio webhooks locally without default messages.
 """
 import requests
 import uuid
@@ -67,7 +67,8 @@ def test_voice_webhook(url):
     try:
         # Send the request
         response = requests.post(url, data=data, timeout=10)
-        
+        print(f"Full request data: {data}")
+        print(f"Full response: {response.text}")
         # Check the response
         if response.status_code == 200:
             print("\n✅ Webhook responded with status code 200")
@@ -99,8 +100,12 @@ def test_voice_webhook(url):
         print(f"❌ Error testing webhook: {str(e)}")
         return None, None
 
-def test_transcribe_webhook(url, call_sid, message="Hello, what's on your menu?"):
-    """Test the transcribe webhook with a simple message."""
+def test_transcribe_webhook(url, call_sid, message=None):
+    """Test the transcribe webhook with a user-provided message."""
+    # If no message provided, prompt the user to input one
+    if message is None:
+        message = input("Enter message to test (or press Enter for empty message): ").strip()
+    
     # Generate a recording SID
     recording_sid = f"RE{uuid.uuid4().hex[:16].upper()}"
     
@@ -118,11 +123,14 @@ def test_transcribe_webhook(url, call_sid, message="Hello, what's on your menu?"
         "RecordingUrl": recording_url,
         "RecordingStatus": "completed",
         "RecordingDuration": "5",
-        "Transcript": message  # This is not a real Twilio parameter but used for testing
     }
     
+    # Only add transcript if there is a message
+    if message:
+        data["Transcript"] = message
+    
     print(f"\nSending transcribe request to: {url}")
-    print(f"With message: \"{message}\"")
+    print(f"With message: \"{message}\"" if message else "With empty message")
     
     try:
         # Send the request
@@ -165,11 +173,11 @@ def main():
     parser = argparse.ArgumentParser(description="Test Twilio webhooks locally")
     parser.add_argument("--url", default=os.environ.get("WEBHOOK_BASE_URL", "http://localhost:8000"), 
                         help="Base URL of the application")
-    parser.add_argument("--message", default="Hello, what's on your menu?", 
-                        help="Message to send to the transcribe webhook")
-    parser.add_argument("--voice-path", default=os.environ.get("VOICE_WEBHOOK_PATH", "/twilio/voice"), 
+    parser.add_argument("--message", default="", 
+                        help="Message to send to the transcribe webhook (empty = interactive mode)")
+    parser.add_argument("--voice-path", default=os.environ.get("VOICE_WEBHOOK_PATH", "/webhook/voice"), 
                         help="Path for the voice webhook")
-    parser.add_argument("--transcribe-path", default=os.environ.get("TRANSCRIBE_WEBHOOK_PATH", "/twilio/transcribe"), 
+    parser.add_argument("--transcribe-path", default=os.environ.get("TRANSCRIBE_WEBHOOK_PATH", "/webhook/transcribe"), 
                         help="Path for the transcribe webhook")
     args = parser.parse_args()
     
@@ -186,9 +194,22 @@ def main():
     voice_response, call_sid = test_voice_webhook(voice_url)
     
     if voice_response and call_sid:
+        # Use provided message or go to interactive mode if empty
+        message = args.message if args.message else None
+        
         # Test transcribe webhook
         print("\n🔍 Testing transcribe webhook (message processing)...")
-        test_transcribe_webhook(transcribe_url, call_sid, args.message)
+        test_transcribe_webhook(transcribe_url, call_sid, message)
+
+        # Allow for multi-turn conversation in interactive mode
+        if not args.message:
+            while True:
+                continue_chat = input("\nContinue conversation? (y/n): ").lower()
+                if continue_chat != 'y':
+                    break
+                
+                next_message = input("Enter next message: ")
+                test_transcribe_webhook(transcribe_url, call_sid, next_message)
     
     print("\n=========================================================")
     print("Test completed")

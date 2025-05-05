@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 """
-Updated Twilio credentials testing script for Voice AI Restaurant Agent.
-
-This script validates the Twilio API credentials and explores the Twilio account
-without making actual phone calls.
+Updated Twilio credentials testing script without default content.
+Tests Twilio API credentials and explores account configuration.
 """
 import os
 import sys
@@ -137,11 +135,6 @@ def explore_webhook_settings(client):
             else:
                 print("  ⚠️ No Status Callback configured")
             
-            # Check status callback method
-            status_callback_method = check_webhook_url(number, 'status_callback_method')
-            if status_callback_method:
-                print(f"  ✅ Status Callback Method: {status_callback_method}")
-            
             print()
             
     except Exception as e:
@@ -150,11 +143,16 @@ def explore_webhook_settings(client):
 def configure_webhook(client, phone_number_sid, base_url):
     """Configure webhook URLs for a phone number."""
     try:
+        # Get user input for webhook paths
+        print("\nConfigure webhook paths:")
+        voice_path = input("Enter voice webhook path (default: /webhook/voice): ").strip() or "/webhook/voice"
+        status_path = input("Enter status callback path (default: /webhook/status): ").strip() or "/webhook/status"
+        
         # Update the phone number with webhook URLs
         update_params = {
-            'voice_url': f"{base_url}/webhook/voice",
+            'voice_url': f"{base_url}{voice_path}",
             'voice_method': 'POST',
-            'status_callback': f"{base_url}/webhook/status",
+            'status_callback': f"{base_url}{status_path}",
             'status_callback_method': 'POST'
         }
         
@@ -201,8 +199,27 @@ def main():
     # Configure webhook if requested
     if args.configure:
         if not args.phone:
-            print("❌ You must specify a phone number SID with --phone when using --configure")
-            return
+            # Interactive mode for phone selection if not specified
+            print("\nYou need to specify a phone number SID to configure webhooks")
+            print("\nAvailable phone numbers:")
+            try:
+                numbers = client.incoming_phone_numbers.list()
+                for i, number in enumerate(numbers):
+                    print(f"{i+1}. {number.phone_number} (SID: {number.sid})")
+                
+                if numbers:
+                    selection = input("\nEnter number to configure (or press Enter to cancel): ")
+                    if selection and selection.isdigit() and 1 <= int(selection) <= len(numbers):
+                        args.phone = numbers[int(selection)-1].sid
+                    else:
+                        print("No valid selection made")
+                        return
+                else:
+                    print("No phone numbers found in this account")
+                    return
+            except Exception as e:
+                print(f"Error listing phone numbers: {str(e)}")
+                return
         
         configure_webhook(client, args.phone, args.configure)
     

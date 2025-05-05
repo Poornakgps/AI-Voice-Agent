@@ -95,7 +95,6 @@ def test_transcribe_webhook(url, call_sid, message=None):
         message = input("Enter message to test (or press Enter for empty message): ").strip()
     
     recording_sid = f"RE{uuid.uuid4().hex[:16].upper()}"
-    t
     account_sid = os.environ.get("TWILIO_SID_KEY", "AC00000000000000000000000000000000")
     
     recording_url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Recordings/{recording_sid}"

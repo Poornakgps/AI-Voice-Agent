@@ -26,12 +26,15 @@ This project implements a restaurant voice assistant that allows customers to:
 - Built tool functions for menu queries, pricing calculations, and reservation management
 - Added mock data generation for testing
 
-### ✅ Agent Building Pipeline with Mocks
+### ✅ Agent Building Pipeline
 - Implemented the RestaurantAgent class for orchestrating conversations
 - Created a flexible prompt management system with Jinja2 templates
 - Built conversation state management
-- Developed a mock OpenAI client for testing without API keys
-- Implemented voice processing components (TwiML generator, STT/TTS mocks)
+- Integrated with OpenAI API (with mock fallbacks for development)
+- Implemented voice processing components:
+  - TwiML generator for Twilio
+  - STT module using OpenAI Whisper API (with mock fallbacks)
+  - TTS module using OpenAI TTS API (with mock fallbacks)
 
 ### ✅ Deployment Pipeline (Local Testing)
 - Created Docker configuration (Dockerfile and docker-compose.yml)
@@ -50,8 +53,8 @@ This project implements a restaurant voice assistant that allows customers to:
 | `database/models.py` | SQLAlchemy ORM models for restaurant entities |
 | `database/repository.py` | Repository pattern implementation for database access |
 | `app/voice/twiml_generator.py` | TwiML response generator for Twilio |
-| `app/voice/stt.py` | Speech-to-Text module with mock implementation |
-| `app/voice/tts.py` | Text-to-Speech module with mock implementation |
+| `app/voice/stt.py` | Speech-to-Text module using OpenAI Whisper API |
+| `app/voice/tts.py` | Text-to-Speech module using OpenAI TTS API |
 | `infrastructure/local/docker-compose.yml` | Docker Compose configuration for local deployment |
 | `infrastructure/local/setup_env.py` | Environment setup script |
 | Various test scripts | Scripts for testing database, API, and Twilio integration |
@@ -62,8 +65,8 @@ This project implements a restaurant voice assistant that allows customers to:
 - Python 3.11+
 - Docker and Docker Compose
 - Ngrok account (for local Twilio webhook testing)
-- Twilio account (optional for full testing)
-- OpenAI API key (optional for development)
+- Twilio account and API credentials (for real voice interaction)
+- OpenAI API key (for TTS, STT, and agent functionality)
 
 ### Local Setup
 
@@ -77,7 +80,7 @@ This project implements a restaurant voice assistant that allows customers to:
    ```bash
    python infrastructure/local/setup_env.py
    ```
-   This will create a `.env` file with necessary configuration.
+   This will create a `.env` file with necessary configuration. Add your API keys for full functionality.
 
 3. Install dependencies:
    ```bash
@@ -112,19 +115,19 @@ python db_explorer.py
 
 ### Agent Testing
 ```bash
-# Interactive CLI for the agent
+# Interactive CLI for the agent (uses OpenAI API if key is provided)
 python interact_agent.py
 ```
 
-### API Testing
+### Audio API Testing
 ```bash
-# Test the TTS functionality
+# Test the TTS functionality (uses OpenAI TTS API if key is provided)
 python test_audio_api.py tts "Welcome to Taste of India"
 
 # Test STT functionality (requires audio URL)
 python test_audio_api.py stt "https://example.com/audio.mp3"
 
-# Test complete TTS -> STT pipeline
+# Test complete TTS -> STT pipeline (requires OpenAI API key)
 python test_audio_api.py full_loop "Welcome to Taste of India"
 ```
 
@@ -133,11 +136,10 @@ The full loop test:
 - Saves the generated audio to a file
 - Uses OpenAI Whisper API to transcribe the audio back to text
 - Compares the original text with the transcription
-- Requires an OpenAI API key in your environment variables
 
 ### Twilio Integration Testing
 ```bash
-# Test Twilio credentials
+# Test Twilio credentials (uses real Twilio client if credentials are provided)
 python test_twilio_credentials.py
 
 # Test webhooks locally
@@ -161,11 +163,11 @@ The voice interaction follows these steps:
 2. **Voice Processing**:
    - Customer speaks after the welcome message
    - Twilio records the speech and sends it to `/webhook/transcribe`
-   - The STT module converts speech to text (mocked in development)
+   - The STT module converts speech to text using OpenAI Whisper (or mock)
 
 3. **Agent Processing**:
    - The transcribed text is sent to the RestaurantAgent
-   - Agent processes the message using OpenAI (mocked in development)
+   - Agent processes the message using OpenAI (or mock)
    - If needed, agent calls database tools to retrieve information
    - Agent generates a response based on the tool results
 
@@ -187,7 +189,3 @@ The following components are still pending:
    - GCS bucket setup for audio and transcript storage
    - Secret Manager configuration
    - CI/CD pipeline with Cloud Build
-
-2. **Integration with Real APIs**:
-   - Replace mock OpenAI client with actual implementation
-   - Replace mock TTS/STT with actual services

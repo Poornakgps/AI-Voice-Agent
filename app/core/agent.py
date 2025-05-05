@@ -119,7 +119,7 @@ class RestaurantAgent:
             import openai
             client = openai.OpenAI(
                 api_key=settings.OPENAI_API_KEY,
-                organization=settings.OPENAI_ORG_ID
+                organization=settings.OPENAIORG_ID
             )
             logger.info("Using real OpenAI client")
             return client

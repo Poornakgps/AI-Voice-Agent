@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.routes import status, admin, twilio_webhook
+from app.routes import audio_test
 
 # Configure logging
 logging.basicConfig(
@@ -49,7 +50,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(audio_test.router, tags=["Testing"])
 # Add error handling middleware
 @app.middleware("http")
 async def error_handling_middleware(request: Request, call_next):

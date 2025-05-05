@@ -47,10 +47,10 @@ def generate_env_file(env_file_path, overwrite=False):
             if "dummy" in value.lower() or "your" in value.lower() or not value.strip():
                 if key == "OPENAI_API_KEY":
                     value = input("Enter your OpenAI API key (leave empty for mock): ").strip() or "dummy_key_for_local_development"
-                elif key == "TWILIO_ACCOUNT_SID":
-                    value = input("Enter your Twilio Account SID (leave empty for mock): ").strip() or "dummy_sid_for_local_development"
-                elif key == "TWILIO_AUTH_TOKEN":
-                    value = input("Enter your Twilio Auth Token (leave empty for mock): ").strip() or "dummy_token_for_local_development"
+                elif key == "TWILIO_API_KEY":
+                    value = input("Enter your Twilio API Key (leave empty for mock): ").strip() or "dummy_key_for_local_development"
+                elif key == "TWILIO_API_SECRET":
+                    value = input("Enter your Twilio API Secret (leave empty for mock): ").strip() or "dummy_secret_for_local_development"
                 elif key == "TWILIO_PHONE_NUMBER":
                     value = input("Enter your Twilio Phone Number (leave empty for mock): ").strip() or "+15555555555"
                 elif key == "NGROK_AUTHTOKEN":

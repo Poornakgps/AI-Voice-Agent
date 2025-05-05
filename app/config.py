@@ -2,9 +2,9 @@
 Configuration settings for the Voice AI Restaurant Agent.
 """
 import os
-from pydantic import field_validator
+from pydantic import field_validator, validator, Field
 from pydantic_settings import BaseSettings
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 from functools import lru_cache
 
 class Settings(BaseSettings):
@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Voice AI Restaurant Agent"
     APP_VERSION: str = "0.1.0"
     APP_DESCRIPTION: str = "A voice AI agent for restaurant interactions"
-    DEBUG: bool = False
+    DEBUG: bool = Field(False, description="Enable debug mode")
     LOG_LEVEL: str = "INFO"
     APP_ENV: str = "production"  # development, staging, production
     
@@ -24,9 +24,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     OPENAI_ORG_ID: Optional[str] = None
     
-    # Twilio settings
+    # Twilio API settings
     TWILIO_API_KEY: Optional[str] = None
     TWILIO_API_SECRET: Optional[str] = None
+    TWILIO_PHONE_NUMBER: Optional[str] = None
     
     # Database settings
     DATABASE_URL: str = "sqlite:///./test.db"
@@ -36,7 +37,7 @@ class Settings(BaseSettings):
     LOCAL_STORAGE_PATH: str = "./storage"
     GCS_BUCKET_NAME: Optional[str] = None
     
-    # Ngrok settings - ADD THIS LINE
+    # Ngrok settings
     NGROK_AUTHTOKEN: Optional[str] = None
     
     # Google Cloud settings
@@ -45,6 +46,17 @@ class Settings(BaseSettings):
     GOOGLE_CLOUD_REGION: str = "us-central1"
     
     # Validators
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug(cls, v):
+        """
+        Parse DEBUG environment variable as boolean.
+        Accepts various string representations of boolean values.
+        """
+        if isinstance(v, str):
+            return v.lower() in ("true", "1", "t", "yes", "y")
+        return bool(v)
+    
     @field_validator("LOG_LEVEL")
     @classmethod
     def validate_log_level(cls, v):
@@ -77,6 +89,9 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
+        # Allow any env var with a prefix of "DEBUG" to override the debug setting
+        # This helps with Docker environment variables
+        extra = "ignore"
 
 @lru_cache()
 def get_settings() -> Settings:

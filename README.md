@@ -1,44 +1,23 @@
-## API Workflow
+# Voice AI Restaurant Agent
 
-The local API workflow follows these steps:
+A conversational AI voice agent powered by OpenAI Agent SDK, integrated with Twilio for voice interactions, and deployed on Google Cloud Platform.
 
-1. **Call Initiation**:
-   - Customer calls the Twilio phone number
-   - Twilio sends a webhook request to `/webhook/voice`
-   - The application generates a welcome TwiML response
+## Project Overview
 
-2. **Voice Processing**:
-   - Customer speaks after the welcome message
-   - Twilio records the speech and sends it to `/webhook/transcribe`
-   - The STT module converts speech to text (mocked in development)
+This project implements a restaurant voice assistant that allows customers to:
+- Inquire about menu items and pricing
+- Check for vegetarian, vegan, and other dietary options
+- View current specials and promotions
+- Make and manage restaurant reservations
+- Get general information about the restaurant
 
-3. **Agent Processing**:
-   - The transcribed text is sent to the RestaurantAgent
-   - Agent adds the message to conversation history
-   - Agent processes the message using OpenAI (mocked in development)
-   - If needed, agent calls database tools to retrieve information
-   - Agent generates a response based on the tool results
-
-4. **Response Generation**:
-   - TwiML generator creates a response with the agent's message
-   - Response is sent back to Twilio
-   - Twilio converts text to speech and plays it to the caller
-   - Conversation continues with more recordings or ends with a goodbye
-
-5. **Call Completion**:
-   - When call ends, Twilio sends a status callback to `/webhook/status`
-   - Application cleans up resources and stores conversation data
-
-This cycle repeats for multi-turn conversations, maintaining state throughout the call.## Development Pipelines
-
-The project has been developed through several implementation pipelines, each focusing on different aspects of the system:
+## Completed Components
 
 ### ✅ FastAPI Backend Pipeline
 - Built the core FastAPI application structure with middleware and routes
 - Set up health/status endpoints for monitoring
 - Created admin endpoints for system management
 - Implemented Twilio webhook handlers for voice interactions
-- Added testing infrastructure for the API endpoints
 
 ### ✅ Database & Tool Setup Pipeline
 - Designed SQLAlchemy schema for restaurant entities
@@ -46,18 +25,13 @@ The project has been developed through several implementation pipelines, each fo
 - Created the repository pattern for database access
 - Built tool functions for menu queries, pricing calculations, and reservation management
 - Added mock data generation for testing
-- Developed comprehensive unit tests for models and tools
 
 ### ✅ Agent Building Pipeline with Mocks
 - Implemented the RestaurantAgent class for orchestrating conversations
 - Created a flexible prompt management system with Jinja2 templates
 - Built conversation state management
 - Developed a mock OpenAI client for testing without API keys
-- Integrated the agent with database tools
-- Implemented voice processing components:
-  - TwiML generator for Twilio responses
-  - STT module (Speech-to-Text) with mocks
-  - TTS module (Text-to-Speech) with mocks
+- Implemented voice processing components (TwiML generator, STT/TTS mocks)
 
 ### ✅ Deployment Pipeline (Local Testing)
 - Created Docker configuration (Dockerfile and docker-compose.yml)
@@ -65,85 +39,22 @@ The project has been developed through several implementation pipelines, each fo
 - Implemented deployment scripts for local development
 - Added environment setup utilities
 - Created verification scripts for deployment testing
-- Developed end-to-end testing for conversation simulation
 
-### ⬜ Environment Setup Pipeline (Partial)
-- This pipeline is not yet complete and would include:
-  - Finalizing cloud infrastructure setup for GCP
-  - Setting up Cloud Run configuration
-  - Configuring monitoring and alerts
-  - Implementing CI/CD workflows for production deployment# AI-Voice-Agent
+## Key Files Added
 
-A conversational AI voice agent powered by OpenAI Agent SDK, integrated with Twilio for voice interactions, and deployed on Google Cloud Platform.
-
-## Project Overview
-
-This project creates a restaurant voice assistant that allows customers to:
-- Inquire about menu items and pricing
-- Check for vegetarian, vegan, and other dietary options
-- View current specials and promotions
-- Make and manage restaurant reservations
-- Get general information about the restaurant
-
-The system uses Twilio to handle phone calls, converts speech to text, processes requests with the OpenAI Agent SDK, and responds with natural voice interactions.
-
-## Current Functionality
-
-The following functionality has been implemented:
-
-### FastAPI Backend
-- Complete REST API with health and monitoring endpoints
-- Admin endpoints for system management
-- Twilio webhook handlers for voice interactions
-- Middleware for request logging and error handling
-
-### Database & Tools
-- SQLAlchemy ORM models for restaurant entities (menus, reservations, etc.)
-- Repository pattern implementation for database access
-- Tool functions for menu queries, pricing calculations, and reservation management
-- Comprehensive mock data for an Indian restaurant
-
-### Agent Components
-- RestaurantAgent class for conversation orchestration
-- Flexible prompt management with Jinja2 templates
-- Mock OpenAI client for development without API keys
-- Integration between agent and database tools
-
-### Voice Processing
-- TwiML generator for Twilio responses
-- Speech-to-Text module with mock implementation
-- Text-to-Speech module with mock implementation
-
-### Deployment
-- Docker configuration for containerization
-- Docker Compose setup for local development
-- Ngrok integration for exposing local webhooks
-- Environment setup utilities
-
-## Remaining Tasks
-
-The following tasks are still pending:
-
-1. **GCP Environment Setup**:
-   - Cloud Run service configuration
-   - GCS bucket setup for audio and transcript storage
-   - Secret Manager configuration
-   - CI/CD pipeline with Cloud Build
-
-2. **Storage Implementation**:
-   - `app/storage/audio.py` - Implement audio file storage in GCS
-   - `app/storage/transcript.py` - Implement transcript storage in GCS
-
-3. **Documentation**:
-   - Complete `docs/API.md` with API endpoint documentation
-   - Complete `docs/ARCHITECTURE.md` with system architecture diagrams
-   - Complete `docs/DEPLOYMENT.md` with deployment instructions
-   - Complete `docs/README.md` with project overview
-   - Complete `docs/TESTING.md` with testing procedures
-
-4. **Integration with Real APIs**:
-   - Replace mock OpenAI client with actual implementation
-   - Replace mock TTS/STT with actual Google Cloud services
+| File | Purpose |
+|------|---------|
+| `app/core/agent.py` | Main agent implementation with conversation management |
+| `app/routes/twilio_webhook.py` | Twilio webhook handlers for voice interactions |
+| `app/tools/*.py` | Database tool functions for menu, pricing, and reservations |
+| `database/models.py` | SQLAlchemy ORM models for restaurant entities |
+| `database/repository.py` | Repository pattern implementation for database access |
+| `app/voice/twiml_generator.py` | TwiML response generator for Twilio |
+| `app/voice/stt.py` | Speech-to-Text module with mock implementation |
+| `app/voice/tts.py` | Text-to-Speech module with mock implementation |
+| `infrastructure/local/docker-compose.yml` | Docker Compose configuration for local deployment |
+| `infrastructure/local/setup_env.py` | Environment setup script |
+| Various test scripts | Scripts for testing database, API, and Twilio integration |
 
 ## Setup Instructions
 
@@ -166,33 +77,81 @@ The following tasks are still pending:
    ```bash
    python infrastructure/local/setup_env.py
    ```
-   This will create a `.env` file with all necessary configuration.
+   This will create a `.env` file with necessary configuration.
 
-3. Deploy the application locally:
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Initialize the database:
+   ```bash
+   python setup_db.py
+   ```
+
+5. Deploy locally with Docker:
    ```bash
    bash infrastructure/local/local_deployment.sh
    ```
-   This will build and start the Docker containers.
 
-4. Verify the deployment:
+6. Verify the deployment:
    ```bash
    python infrastructure/local/check_deployment.py
    ```
 
-### Twilio Configuration (Optional)
+## Testing Commands
 
-If you want to test with actual phone calls:
+### Database Testing
+```bash
+# Test database setup and queries
+python db_test.py
 
-1. Create a Twilio account and purchase a phone number
-2. Set up your Twilio number to point to your ngrok URL:
-   - Voice Webhook: `https://<your-ngrok-url>/webhook/voice`
-   - Status Callback URL: `https://<your-ngrok-url>/webhook/status`
+# Interactive database explorer
+python db_explorer.py
+```
 
-3. Update your `.env` file with your Twilio credentials
+### Agent Testing
+```bash
+# Interactive CLI for the agent
+python interact_agent.py
+```
+
+### API Testing
+```bash
+# Test the TTS functionality
+python test_audio_api.py tts "Welcome to Taste of India"
+
+# Test STT functionality (requires audio URL)
+python test_audio_api.py stt "https://example.com/audio.mp3"
+
+# Test complete TTS -> STT pipeline
+python test_audio_api.py full_loop "Welcome to Taste of India"
+```
+
+The full loop test:
+- Converts text to speech using the TTS endpoint
+- Saves the generated audio to a file
+- Uses OpenAI Whisper API to transcribe the audio back to text
+- Compares the original text with the transcription
+- Requires an OpenAI API key in your environment variables
+
+### Twilio Integration Testing
+```bash
+# Test Twilio credentials
+python test_twilio_credentials.py
+
+# Test webhooks locally
+python test_local_webhook.py --url=http://localhost:8000 --message="What's on your menu?"
+```
+
+### End-to-End Testing
+```bash
+python infrastructure/local/e2e_test.py
+```
 
 ## API Workflow
 
-The local API workflow follows these steps:
+The voice interaction follows these steps:
 
 1. **Call Initiation**:
    - Customer calls the Twilio phone number
@@ -206,7 +165,6 @@ The local API workflow follows these steps:
 
 3. **Agent Processing**:
    - The transcribed text is sent to the RestaurantAgent
-   - Agent adds the message to conversation history
    - Agent processes the message using OpenAI (mocked in development)
    - If needed, agent calls database tools to retrieve information
    - Agent generates a response based on the tool results
@@ -215,46 +173,21 @@ The local API workflow follows these steps:
    - TwiML generator creates a response with the agent's message
    - Response is sent back to Twilio
    - Twilio converts text to speech and plays it to the caller
-   - Conversation continues with more recordings or ends with a goodbye
 
 5. **Call Completion**:
    - When call ends, Twilio sends a status callback to `/webhook/status`
    - Application cleans up resources and stores conversation data
 
-This cycle repeats for multi-turn conversations, maintaining state throughout the call.
+## Remaining Tasks
 
-## Testing the Application
+The following components are still pending:
 
-### Manual Testing with CLI Tools
+1. **Environment Setup Pipeline (GCP)**:
+   - Cloud Run service configuration
+   - GCS bucket setup for audio and transcript storage
+   - Secret Manager configuration
+   - CI/CD pipeline with Cloud Build
 
-1. Run the database explorer to interact with the restaurant database:
-   ```bash
-   python db_explorer.py
-   ```
-
-2. Test the agent manually:
-   ```bash
-   python test_agent_manually.py
-   ```
-
-3. Test the database with sample queries:
-   ```bash
-   python db_test.py
-   ```
-
-### Automated Testing
-
-1. Run unit tests:
-   ```bash
-   pytest tests/unit/
-   ```
-
-2. Run integration tests:
-   ```bash
-   pytest tests/integration/
-   ```
-
-3. Run end-to-end tests:
-   ```bash
-   python infrastructure/local/e2e_test.py
-   ```
+2. **Integration with Real APIs**:
+   - Replace mock OpenAI client with actual implementation
+   - Replace mock TTS/STT with actual services

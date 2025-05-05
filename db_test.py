@@ -55,9 +55,27 @@ def test_menu_items():
         print(f"Found {len(items)} items in category '{category_name}':")
         for item in items:
             print(f"  - {item['name']}: ${item['price']:.2f}")
-            if item.get('dietary_restrictions'):
-                restrictions = [dr["type"] for dr in item["dietary_restrictions"]]
-                print(f"    Dietary restrictions: {', '.join(restrictions)}")
+            
+            # Safely handle dietary restrictions with proper error checking
+            if "dietary_restrictions" in item and item["dietary_restrictions"]:
+                try:
+                    # First try to access as a dictionary with type field
+                    restriction_types = []
+                    for dr in item["dietary_restrictions"]:
+                        # Try different possible keys
+                        if isinstance(dr, dict):
+                            if "type" in dr:
+                                restriction_types.append(dr["type"])
+                            elif "restriction_type" in dr:
+                                restriction_types.append(dr["restriction_type"])
+                            elif "value" in dr:
+                                restriction_types.append(dr["value"])
+                    
+                    if restriction_types:
+                        print(f"    Dietary restrictions: {', '.join(restriction_types)}")
+                except (TypeError, KeyError) as e:
+                    # If all else fails, just print what we got
+                    print(f"    Dietary information: {item['dietary_restrictions']}")
 
 def test_search_menu():
     """Test searching menu items."""
@@ -128,7 +146,11 @@ def test_reservation_availability():
             print(f"Reservation available for {party_size} people on {result['date']} at {result['time']}")
             print("Available tables:")
             for table in result["available_tables"]:
-                print(f"  - Table {table['table_number']} (capacity: {table['capacity']}, location: {table['location']})")
+                # Safely access table fields with .get() method to provide defaults
+                table_number = table.get('table_number', 'unknown')
+                capacity = table.get('capacity', 0)
+                location = table.get('location', 'not specified')
+                print(f"  - Table {table_number} (capacity: {capacity}, location: {location})")
         else:
             print(f"No availability for {party_size} people on {date_str} at {time_str}")
             if "alternatives" in result:

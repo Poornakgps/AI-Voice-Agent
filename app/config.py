@@ -21,13 +21,13 @@ class Settings(BaseSettings):
     PORT: int = 8000
     
     # OpenAI settings
-    OPENAI_API_KEY: Optional[str] = None
-    OPENAI_ORG_ID: Optional[str] = None
+    OPENAI_API_KEY: str = os.environ.get("OPENAI_API_KEY", "")
+    OPENAI_ORG_ID: Optional[str] = os.environ.get("OPENAI_ORG_ID", None)
     
     # Twilio API settings
-    TWILIO_API_KEY: Optional[str] = None
-    TWILIO_API_SECRET: Optional[str] = None
-    TWILIO_PHONE_NUMBER: Optional[str] = None
+    TWILIO_API_KEY: str = os.environ.get("TWILIO_API_KEY", "")
+    TWILIO_API_SECRET: str = os.environ.get("TWILIO_API_SECRET", "")
+    TWILIO_PHONE_NUMBER: Optional[str] = os.environ.get("TWILIO_PHONE_NUMBER", None)
     
     # Database settings
     DATABASE_URL: str = "sqlite:///./test.db"
@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     GOOGLE_CLOUD_PROJECT: Optional[str] = None
     GOOGLE_CLOUD_CREDENTIALS: Optional[str] = None
     GOOGLE_CLOUD_REGION: str = "us-central1"
+    
+    # Force using real OpenAI and Twilio APIs if keys are provided
+    USE_REAL_APIS: bool = True
     
     # Validators
     @field_validator("DEBUG", mode="before")
@@ -84,6 +87,24 @@ class Settings(BaseSettings):
             raise ValueError(f"STORAGE_TYPE must be one of {allowed_types}")
         return v
     
+    @field_validator("OPENAI_API_KEY")
+    @classmethod
+    def check_openai_key(cls, v):
+        """Validate OpenAI API key is properly set."""
+        if v and v.strip() and "dummy" not in v:
+            print("✅ OpenAI API key is configured properly")
+            return v
+        return ""
+    
+    @field_validator("TWILIO_API_KEY")
+    @classmethod
+    def check_twilio_key(cls, v):
+        """Validate Twilio API key is properly set."""
+        if v and v.strip() and "dummy" not in v:
+            print("✅ Twilio API key is configured properly")
+            return v
+        return ""
+    
     class Config:
         """Pydantic configuration."""
         env_file = ".env"
@@ -107,4 +128,7 @@ settings = get_settings()
 
 # For debug purposes
 if __name__ == "__main__":
-    print(settings.dict())
+    print("API KEYS STATUS:")
+    print(f"OpenAI API Key: {'Configured' if settings.OPENAI_API_KEY else 'Not configured'}")
+    print(f"Twilio API Key: {'Configured' if settings.TWILIO_API_KEY else 'Not configured'}")
+    print(f"Twilio API Secret: {'Configured' if settings.TWILIO_API_SECRET else 'Not configured'}")

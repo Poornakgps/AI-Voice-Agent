@@ -75,3 +75,31 @@ async def metrics():
         cpu_usage=10.5,  # %
         active_connections=2
     )
+
+@router.get("/test-openai", status_code=status.HTTP_200_OK)
+async def test_openai():
+    """
+    Test if OpenAI API key is working.
+    """
+    if not settings.OPENAI_API_KEY:
+        return {"status": "error", "message": "No OpenAI API key configured"}
+    
+    try:
+        import openai
+        # Initialize client without organization ID
+        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+        
+        # Make a simple API call
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Say hello"}],
+            max_tokens=10
+        )
+        
+        return {
+            "status": "success", 
+            "message": "OpenAI API is working",
+            "response": response.choices[0].message.content
+        }
+    except Exception as e:
+        return {"status": "error", "message": f"Error using OpenAI API: {str(e)}"}

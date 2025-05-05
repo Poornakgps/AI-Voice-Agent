@@ -2,6 +2,7 @@ import sys
 import os
 import logging
 from pathlib import Path
+from datetime import datetime
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,40 +42,68 @@ def interactive_session():
     print_header()
     print_help()
     
-    print("\nInitializing the database and agent...")
+    # Create a log file with timestamp in filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_filename = f"conversation_{timestamp}.txt"
+    log_file = open(log_filename, "w", encoding="utf-8")
+    
+    # Write header to log file
+    log_file.write("=== Voice AI Restaurant Agent Conversation Log ===\n")
+    log_file.write(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    
+    print(f"\nInitializing the database and agent...")
+    print(f"Conversation will be logged to: {log_filename}")
     init_db()
     
-    with db_session() as session:
-        agent = RestaurantAgent(session)
-        
-        print("\nAgent is ready! You can start chatting now.\n")
-        
-        while True:
-            try:
-                user_input = input("\nYou: ").strip()
-                
-                if user_input.lower() in ["exit", "quit", "bye", "goodbye"]:
-                    print("\nThank you for chatting with me! Goodbye!")
+    try:
+        with db_session() as session:
+            agent = RestaurantAgent(session)
+            
+            print("\nAgent is ready! You can start chatting now.\n")
+            
+            while True:
+                try:
+                    user_input = input("\nYou: ").strip()
+                    
+                    # Log user input
+                    log_file.write(f"You: {user_input}\n")
+                    
+                    if user_input.lower() in ["exit", "quit", "bye", "goodbye"]:
+                        print("\nThank you for chatting with me! Goodbye!")
+                        log_file.write("\nPriya: Thank you for chatting with me! Goodbye!\n")
+                        break
+                    
+                    if user_input.lower() in ["help", "?"]:
+                        print_help()
+                        log_file.write("(Help information displayed)\n")
+                        continue
+                    
+                    if not user_input:
+                        continue
+                    
+                    print("\nProcessing your request...")
+                    response = agent.process_message(user_input)
+                    
+                    print(f"\nPriya: {response}")
+                    
+                    # Log agent response
+                    log_file.write(f"Priya: {response}\n\n")
+                    
+                except KeyboardInterrupt:
+                    print("\n\nSession terminated by user. Goodbye!")
+                    log_file.write("\n\nSession terminated by user. Goodbye!\n")
                     break
-                
-                if user_input.lower() in ["help", "?"]:
-                    print_help()
-                    continue
-                
-                if not user_input:
-                    continue
-                
-                print("\nProcessing your request...")
-                response = agent.process_message(user_input)
-                
-                print(f"\nPriya: {response}")
-                
-            except KeyboardInterrupt:
-                print("\n\nSession terminated by user. Goodbye!")
-                break
-            except Exception as e:
-                print(f"\nError: {str(e)}")
-                print("Let's continue our conversation.")
+                except Exception as e:
+                    error_message = f"\nError: {str(e)}"
+                    print(error_message)
+                    log_file.write(f"{error_message}\n")
+                    print("Let's continue our conversation.")
+                    log_file.write("Let's continue our conversation.\n")
+    finally:
+        # Write footer and close log file
+        log_file.write(f"\nEnded: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        log_file.close()
+        print(f"\nConversation log saved to: {log_filename}")
 
 if __name__ == "__main__":
     interactive_session()

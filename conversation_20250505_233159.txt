@@ -1,0 +1,121 @@
+=== Voice AI Restaurant Agent Conversation Log ===
+Started: 2025-05-05 23:31:59
+
+You: hello
+Priya: Hi there! Thank you for calling Taste of India. How can I assist you today?
+
+You: can you show me the menu?
+Priya: We have several menu categories including Starters, Main Courses, Bread, Rice Dishes, Desserts, Beverages. What would you like to know more about?
+
+You: can u show me the starters?
+Priya: I've looked that up for you. Is there anything specific you'd like to know about our restaurant?
+
+You: starters
+Priya: Here are our starters:
+
+1. **Samosa** - Crispy pastry filled with spiced potatoes and peas. Price: $5.99 (Vegetarian)
+
+2. **Paneer Tikka** - Marinated cottage cheese cubes grilled in tandoor. Price: $6.99 (Vegetarian)
+
+3. **Pakora** - Vegetable fritters with chickpea batter. Price: $6.99 (Vegetarian)
+
+Would you like to know more about any of these dishes or perhaps order something?
+
+You: yes i want 2 samosas
+Priya: Great choice! So that's 2 Samosas for you. Would you like to place this order for pickup or delivery? And when would you like to pick it up or have it delivered?
+
+You: wait i also want rice dishes
+Priya: No problem! Let me share our rice dishes with you. One moment, please.
+
+You: share
+Priya: I've looked that up for you. Is there anything specific you'd like to know about our restaurant?
+
+You: share me the rice dishes
+Priya: Here are our rice dishes:
+
+1. **Vegetable Biryani** - Aromatic rice with mixed vegetables and spices. Price: $13.99 (Vegetarian, Gluten-Free)
+
+2. **Chicken Biryani** - Fragrant rice cooked with chicken and spices. Price: $15.99 (Gluten-Free, Halal)
+
+3. **Jeera Rice** - Basmati rice with cumin seeds. Price: $5.99 (Vegetarian, Vegan, Gluten-Free)
+
+Would you like to order any of these rice dishes alongside your samosas?
+
+You: i want 1 chicken biryani and 2 vegetable biryani
+Priya: To confirm, here's what you would like to order:
+
+- 2 Samosas
+- 1 Chicken Biryani
+- 2 Vegetable Biryanis
+
+Would you like to place this order for pickup or delivery, and when would you like it?
+
+You: i want to add deserts also
+Priya: Sure! Let me pull up our dessert options for you. One moment, please.
+
+You: share me the dessert options
+Priya: I've looked that up for you. Is there anything specific you'd like to know about our restaurant?
+
+You: share dessert options
+Priya: Here are our dessert options:
+
+1. **Gulab Jamun** - Deep-fried milk solids soaked in sugar syrup. Price: $4.99 (Vegetarian)
+
+2. **Kheer** - Rice pudding with cardamom and nuts. Price: $5.99 (Vegetarian)
+
+Would you like to add any of these desserts to your order?
+
+You: i want 2 gulab jamun
+Priya: Great choice! So to confirm, your order now includes:
+
+- 2 Samosas
+- 1 Chicken Biryani
+- 2 Vegetable Biryanis
+- 2 Gulab Jamun
+
+Would you like to place this order for pickup or delivery, and when would you like it?
+
+You: Now i will pickup
+Priya: Perfect! What time would you like to pick up your order?
+
+You: now 6th may 2025 12 am
+Priya: Just to confirm, you would like to pick up your order on **May 6th, 2025, at 12:00 AM**. Can I have your name and phone number for the reservation?
+
+You: Poornachandra, 9550401251
+Priya: I've looked that up for you. Is there anything specific you'd like to know about our restaurant?
+
+You: Poornachandra, 9550401251
+Priya: Thank you, Poornachandra! However, I need to let you know that our restaurant is open from 11:00 AM to 10:00 PM. 
+
+Could you please choose a pickup time during our operating hours?
+
+You: yes 11AM then
+Priya: Great! So your order for pickup will be on **May 6th, 2025, at 11:00 AM**. 
+
+Here's the complete order:
+- 2 Samosas
+- 1 Chicken Biryani
+- 2 Vegetable Biryanis
+- 2 Gulab Jamun
+
+Can you please confirm if everything looks good?
+
+You: yes i confirm
+Priya: I've looked that up for you. Is there anything specific you'd like to know about our restaurant?
+
+You: Yes, I confirm
+Priya: Your order is confirmed, Poornachandra! You can pick it up on **May 6th, 2025, at 11:00 AM**. 
+
+Here's a quick recap of your order:
+- 2 Samosas
+- 1 Chicken Biryani
+- 2 Vegetable Biryanis
+- 2 Gulab Jamun
+
+If you have any more questions or need further assistance, feel free to reach out. Enjoy your meal at Taste of India!
+
+
+
+Session terminated by user. Goodbye!
+
+Ended: 2025-05-05 23:37:16

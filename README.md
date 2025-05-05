@@ -315,24 +315,6 @@ The database includes these main entities:
 6. **Reservation**: Customer reservations
 7. **RestaurantTable**: Physical tables in the restaurant
 
-## Production Deployment (GCP)
-
-For production deployment on Google Cloud Platform:
-
-1. **Set up GCP project**:
-   ```bash
-   bash infrastructure/scripts/setup_project.sh
-   ```
-
-2. **Deploy to Cloud Run**:
-   ```bash
-   bash infrastructure/scripts/deploy.sh
-   ```
-
-3. **Configure monitoring**:
-   - Set up alerts using `infrastructure/gcp/monitoring/alerts.yaml`
-   - Deploy dashboards using `infrastructure/gcp/monitoring/dashboards.json`
-
 ## Troubleshooting
 
 ### Common Issues

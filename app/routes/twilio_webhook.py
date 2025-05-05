@@ -26,7 +26,7 @@ twiml_generator = TwiMLGenerator()
 
 active_sessions = {}
 
-def validate_twilio_request(request: Request) -> bool:
+def validate_twilio_request(request: Request, form_data) -> bool:
     """Validate that the request is coming from Twilio."""
     if settings.DEBUG or not settings.TWILIO_API_SECRET:
         return True
@@ -35,25 +35,18 @@ def validate_twilio_request(request: Request) -> bool:
     if not twilio_signature:
         return False
     
-    url = str(request.url)
-    form_data = request.form()
+    # Convert to dict for validation
+    form_dict = dict(form_data)
     
-    sorted_form_data = sorted(form_data.items())
+    # Use Twilio's validator
+    from twilio.request_validator import RequestValidator
+    validator = RequestValidator(settings.TWILIO_API_SECRET)
     
-    validation_string = url
-    for k, v in sorted_form_data:
-        validation_string += k + v
-    
-    api_secret = settings.TWILIO_API_SECRET
-    expected_signature = base64.b64encode(
-        hmac.new(
-            api_secret.encode("utf-8"),
-            validation_string.encode("utf-8"),
-            hashlib.sha1
-        ).digest()
-    ).decode("utf-8")
-    
-    return hmac.compare_digest(expected_signature, twilio_signature)
+    return validator.validate(
+        str(request.url),
+        form_dict,
+        twilio_signature
+    )
 
 def get_or_create_agent(call_sid: str, db: Session) -> RestaurantAgent:
     """
@@ -75,11 +68,12 @@ def get_or_create_agent(call_sid: str, db: Session) -> RestaurantAgent:
 
 @router.post("/voice", response_class=PlainTextResponse)
 async def voice_webhook(request: Request, db: Session = Depends(get_db_dependency)):
-    if not settings.DEBUG and not validate_twilio_request(request):
+    form_data = await request.form()
+    
+    if not settings.DEBUG and not validate_twilio_request(request, form_data):
         logger.warning("Invalid Twilio signature")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
     
-    form_data = await request.form()
     call_sid = form_data.get("CallSid", "unknown")
     caller = form_data.get("From", "unknown")
     logger.info(f"Incoming call received: {call_sid} from {caller}")
@@ -108,17 +102,28 @@ async def transcribe_webhook(request: Request, db: Session = Depends(get_db_depe
     Returns:
         PlainTextResponse: TwiML response.
     """
-    if not settings.DEBUG and not validate_twilio_request(request):
+    form_data = await request.form()
+    
+    if not settings.DEBUG and not validate_twilio_request(request, form_data):
         logger.warning("Invalid Twilio signature")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
     
-    form_data = await request.form()
     call_sid = form_data.get("CallSid", "unknown")
     recording_url = form_data.get("RecordingUrl")
     recording_sid = form_data.get("RecordingSid", "unknown")
     
     logger.info(f"Recording received: {recording_sid} from call {call_sid}")
 
+    # Check if transcript was directly provided (for testing)
+    transcript = form_data.get("Transcript")
+    
+    # Debug DB connection
+    try:
+        category_count = db.query(MenuCategory).count()
+        logger.info(f"DB check: Found {category_count} menu categories")
+    except Exception as e:
+        logger.error(f"DB connection error: {str(e)}")
+    
     client = create_twilio_client()
     if not client:
         logger.error("Failed to create Twilio client")
@@ -128,27 +133,35 @@ async def transcribe_webhook(request: Request, db: Session = Depends(get_db_depe
         )
     agent = get_or_create_agent(call_sid, db)
     
-    if recording_url:
-        try:
+    try:
+        # If transcript is directly provided (for testing), use it
+        if transcript:
+            logger.info(f"Using provided transcript: '{transcript}'")
+        # Otherwise try to transcribe from the recording URL
+        elif recording_url:
             transcript = await transcribe_audio(recording_url)
-            logger.info(f"Transcription: {transcript}")
-            
-            agent_response = agent.process_message(transcript)
-            
+        else:
+            logger.warning(f"No recording URL or transcript for call {call_sid}")
             return PlainTextResponse(
-                content=twiml_generator.agent_response(agent_response),
+                content=twiml_generator.fallback_response(),
                 media_type="application/xml"
             )
-        except Exception as e:
-            logger.error(f"Error processing recording: {str(e)}")
-            return PlainTextResponse(
-                content=twiml_generator.error_response("I'm sorry, I couldn't understand that. Could you try again?"),
-                media_type="application/xml"
-            )
-    else:
-        logger.warning(f"No recording URL for call {call_sid}")
+        
+        logger.info(f"Processing transcript: '{transcript}'")
+        
+        # Process the transcript with the agent
+        agent_response = agent.process_message(transcript)
+        
+        logger.info(f"Agent response: '{agent_response}'")
+        
         return PlainTextResponse(
-            content=twiml_generator.fallback_response(),
+            content=twiml_generator.agent_response(agent_response),
+            media_type="application/xml"
+        )
+    except Exception as e:
+        logger.error(f"Error processing recording: {str(e)}", exc_info=True)
+        return PlainTextResponse(
+            content=twiml_generator.error_response("I'm sorry, I couldn't understand that. Could you try again?"),
             media_type="application/xml"
         )
 

@@ -9,25 +9,27 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 def create_twilio_client():
-    """
-    Create a properly configured Twilio client.
+    """Create a properly configured Twilio client."""
+    # Check for Account SID + Auth Token first
+    if settings.TWILIO_SID_KEY and settings.TWILIO_API_SECRET:
+        try:
+            client = Client(settings.TWILIO_SID_KEY, settings.TWILIO_API_SECRET)
+            logger.info("Successfully initialized Twilio client with Account SID + Auth Token")
+            return client
+        except Exception as e:
+            logger.error(f"Failed to initialize Twilio client with Account SID: {str(e)}")
     
-    Returns:
-        Client: Configured Twilio client instance or None if configuration is missing
-    """
-    # Check for required configuration
-    if not settings.TWILIO_API_KEY or not settings.TWILIO_API_SECRET:
-        logger.warning("Missing Twilio API credentials")
-        return None
+    # Fallback to API Key + API Secret
+    if settings.TWILIO_API_KEY and settings.TWILIO_API_SECRET:
+        try:
+            client = Client(settings.TWILIO_API_KEY, settings.TWILIO_API_SECRET)
+            logger.info("Successfully initialized Twilio client with API Key")
+            return client
+        except Exception as e:
+            logger.error(f"Failed to initialize Twilio client with API Key: {str(e)}")
     
-    try:
-        # Create client with API key authentication
-        client = Client(settings.TWILIO_API_KEY, settings.TWILIO_API_SECRET)
-        logger.info("Successfully initialized Twilio client")
-        return client
-    except Exception as e:
-        logger.error(f"Failed to initialize Twilio client: {str(e)}")
-        return None
+    logger.warning("Missing Twilio API credentials")
+    return None
 
 def send_sms(to_number, from_number, message):
     """

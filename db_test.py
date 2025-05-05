@@ -1,9 +1,3 @@
-"""
-Database testing script for the Voice AI Restaurant Agent.
-
-This script initializes the database, seeds it with mock data,
-and performs various queries to verify the data.
-"""
 import os
 import sys
 from datetime import datetime
@@ -11,7 +5,6 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-# Import database modules
 from database import init_db, db_session
 from database.models import MenuCategory, MenuItem, Ingredient, DietaryRestriction
 from database.models import SpecialPricing, Reservation, RestaurantTable, DietaryRestrictionType

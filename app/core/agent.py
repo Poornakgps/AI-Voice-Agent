@@ -10,7 +10,6 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
-# Import mock for development without API keys
 from tests.mocks.mock_openai import MockOpenAIClient
 
 from app.config import settings

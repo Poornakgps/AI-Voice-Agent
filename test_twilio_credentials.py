@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-"""
-Updated Twilio credentials testing script without default content.
-Tests Twilio API credentials and explores account configuration.
-"""
 import os
 import sys
 import argparse
@@ -10,14 +5,12 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Try to load .env file
 if os.path.exists(".env"):
     load_dotenv()
 
-# Check for required environment variables
 TWILIO_API_KEY = os.environ.get("TWILIO_API_KEY", "")
 TWILIO_API_SECRET = os.environ.get("TWILIO_API_SECRET", "")
-TWILIO_SID_KEY = os.environ.get("TWILIO_SID_KEY", "")  # Account SID
+TWILIO_SID_KEY = os.environ.get("TWILIO_SID_KEY", "") 
 
 def validate_credentials():
     """Validate that the Twilio credentials are properly set."""
@@ -39,12 +32,9 @@ def test_twilio_client():
     try:
         from twilio.rest import Client
         
-        # Create client with API key authentication
         if TWILIO_SID_KEY:
-            # If we have an account SID, use that with the API key/secret
             client = Client(TWILIO_API_KEY, TWILIO_API_SECRET, TWILIO_SID_KEY)
         else:
-            # Otherwise just use the API key/secret
             client = Client(TWILIO_API_KEY, TWILIO_API_SECRET)
         
         print("✅ Successfully created Twilio client")
@@ -64,7 +54,6 @@ def explore_phone_numbers(client):
     
     print("\n📞 Phone Numbers:")
     try:
-        # List phone numbers
         incoming_numbers = client.incoming_phone_numbers.list()
         if incoming_numbers:
             for number in incoming_numbers:
@@ -72,13 +61,11 @@ def explore_phone_numbers(client):
                 print(f"  Friendly Name: {number.friendly_name}")
                 print(f"  SID: {number.sid}")
                 
-                # Print URLs if they exist
                 if hasattr(number, 'voice_url') and number.voice_url:
                     print(f"  Voice URL: {number.voice_url}")
                 if hasattr(number, 'sms_url') and number.sms_url:
                     print(f"  SMS URL: {number.sms_url}")
                 
-                # Print other webhook URLs if they exist
                 attrs_to_check = [
                     'status_callback', 'voice_fallback_url', 
                     'sms_fallback_url', 'voice_status_callback_url'
@@ -107,7 +94,6 @@ def explore_webhook_settings(client):
     
     print("\n🔄 Webhook Settings Check:")
     try:
-        # List phone numbers
         incoming_numbers = client.incoming_phone_numbers.list()
         if not incoming_numbers:
             print("No phone numbers found to check webhook settings")
@@ -116,19 +102,16 @@ def explore_webhook_settings(client):
         for number in incoming_numbers:
             print(f"Phone Number: {number.phone_number}")
             
-            # Check voice URL
             voice_url = check_webhook_url(number, 'voice_url')
             if voice_url:
                 print(f"  ✅ Voice URL: {voice_url}")
             else:
                 print("  ❌ No Voice URL configured")
             
-            # Check voice method
             voice_method = check_webhook_url(number, 'voice_method')
             if voice_method:
                 print(f"  ✅ Voice Method: {voice_method}")
             
-            # Check status callback
             status_callback = check_webhook_url(number, 'status_callback')
             if status_callback:
                 print(f"  ✅ Status Callback: {status_callback}")
@@ -143,12 +126,10 @@ def explore_webhook_settings(client):
 def configure_webhook(client, phone_number_sid, base_url):
     """Configure webhook URLs for a phone number."""
     try:
-        # Get user input for webhook paths
         print("\nConfigure webhook paths:")
         voice_path = input("Enter voice webhook path (default: /webhook/voice): ").strip() or "/webhook/voice"
         status_path = input("Enter status callback path (default: /webhook/status): ").strip() or "/webhook/status"
         
-        # Update the phone number with webhook URLs
         update_params = {
             'voice_url': f"{base_url}{voice_path}",
             'voice_method': 'POST',
@@ -160,7 +141,6 @@ def configure_webhook(client, phone_number_sid, base_url):
         
         print(f"✅ Successfully configured webhooks for {phone_number.phone_number}")
         
-        # Print updated webhook URLs
         if hasattr(phone_number, 'voice_url'):
             print(f"  Voice URL: {phone_number.voice_url}")
         if hasattr(phone_number, 'status_callback'):
@@ -181,25 +161,19 @@ def main():
     print("Voice AI Restaurant Agent - Twilio Credentials Test")
     print("=========================================================")
     
-    # Validate credentials
     if not validate_credentials():
         return
     
-    # Test creating a client
     client = test_twilio_client()
     if not client:
         return
     
-    # Explore the phone numbers
     explore_phone_numbers(client)
     
-    # Check webhook settings
     explore_webhook_settings(client)
     
-    # Configure webhook if requested
     if args.configure:
         if not args.phone:
-            # Interactive mode for phone selection if not specified
             print("\nYou need to specify a phone number SID to configure webhooks")
             print("\nAvailable phone numbers:")
             try:

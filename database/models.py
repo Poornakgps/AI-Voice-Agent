@@ -1,9 +1,3 @@
-# database/models.py
-"""
-Database models for the Voice AI Restaurant Agent.
-
-This module defines SQLAlchemy ORM models for our restaurant database.
-"""
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, Enum, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -23,7 +17,6 @@ class MenuCategory(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     menu_items = relationship("MenuItem", back_populates="category")
     
     def __repr__(self):
@@ -46,7 +39,6 @@ class MenuItem(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     category = relationship("MenuCategory", back_populates="menu_items")
     ingredients = relationship("Ingredient", secondary="menu_item_ingredients", back_populates="menu_items")
     dietary_restrictions = relationship("DietaryRestriction", secondary="menu_item_dietary_restrictions", back_populates="menu_items")
@@ -87,7 +79,6 @@ class Ingredient(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     menu_items = relationship("MenuItem", secondary="menu_item_ingredients", back_populates="ingredients")
     
     def __repr__(self):
@@ -114,7 +105,6 @@ class DietaryRestriction(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     menu_items = relationship("MenuItem", secondary="menu_item_dietary_restrictions", back_populates="dietary_restrictions")
     
     def __repr__(self):
@@ -144,7 +134,6 @@ class SpecialPricing(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     menu_item = relationship("MenuItem", back_populates="special_prices")
     
     def __repr__(self):
@@ -171,7 +160,6 @@ class Reservation(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     tables = relationship("RestaurantTable", secondary="reservation_tables", back_populates="reservations")
     
     def __repr__(self):
@@ -210,7 +198,6 @@ class RestaurantTable(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     
-    # Relationships
     reservations = relationship("Reservation", secondary="reservation_tables", back_populates="tables")
     
     def __repr__(self):

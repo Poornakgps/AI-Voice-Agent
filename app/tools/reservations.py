@@ -1,9 +1,3 @@
-# app/tools/reservations.py
-"""
-Reservation tools for the Voice AI Restaurant Agent.
-
-This module provides functions to manage reservations.
-"""
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -25,7 +19,6 @@ def check_reservation_availability(
     Returns:
         Availability information
     """
-    # Parse date and time
     try:
         year, month, day = date.split("-")
         hour, minute = time.split(":")
@@ -36,7 +29,6 @@ def check_reservation_availability(
             "error": "Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time."
         }
     
-    # Check if the reservation is in the future
     now = datetime.now()
     if reservation_date < now:
         return {
@@ -44,8 +36,6 @@ def check_reservation_availability(
             "error": "Reservation must be in the future."
         }
     
-    # Check if the restaurant is open at the requested time
-    # Assuming the restaurant is open from 11:00 to 22:00
     opening_hour = 11
     closing_hour = 22
     if reservation_date.hour < opening_hour or reservation_date.hour >= closing_hour:
@@ -54,12 +44,10 @@ def check_reservation_availability(
             "error": f"The restaurant is only open from {opening_hour}:00 to {closing_hour}:00."
         }
     
-    # Check availability
     repo = ReservationRepository(db)
     available = repo.check_availability(reservation_date, party_size)
     
     if not available:
-        # Find alternative times
         alternatives = []
         for hour_offset in [-1, 1, -2, 2]:
             alt_time = reservation_date + timedelta(hours=hour_offset)
@@ -72,7 +60,6 @@ def check_reservation_availability(
             "alternatives": alternatives
         }
     
-    # Get available tables
     table_repo = RestaurantTableRepository(db)
     available_tables = table_repo.get_available_tables(reservation_date, party_size)
     
@@ -118,7 +105,6 @@ def create_reservation(
     Returns:
         Reservation information
     """
-    # Parse date and time
     try:
         year, month, day = date.split("-")
         hour, minute = time.split(":")
@@ -129,7 +115,6 @@ def create_reservation(
             "error": "Invalid date or time format. Use YYYY-MM-DD for date and HH:MM for time."
         }
     
-    # Check availability
     availability = check_reservation_availability(db, date, time, party_size)
     if not availability["available"]:
         return {
@@ -138,7 +123,6 @@ def create_reservation(
             "alternatives": availability.get("alternatives", [])
         }
     
-    # Create reservation
     reservation_repo = ReservationRepository(db)
     reservation = reservation_repo.create(
         customer_name=customer_name,
@@ -150,11 +134,9 @@ def create_reservation(
         status=ReservationStatus.CONFIRMED
     )
     
-    # Assign tables
     table_repo = RestaurantTableRepository(db)
     available_tables = table_repo.get_available_tables(reservation_date, party_size)
     
-    # Assign appropriate tables
     assigned_tables = []
     remaining_capacity = party_size
     
@@ -165,7 +147,6 @@ def create_reservation(
         assigned_tables.append(table)
         remaining_capacity -= table.capacity
     
-    # Update reservation with assigned tables
     reservation.tables = assigned_tables
     db.commit()
     
@@ -245,14 +226,12 @@ def cancel_reservation(db: Session, reservation_id: int) -> Dict[str, Any]:
             "error": f"Reservation with ID {reservation_id} not found."
         }
     
-    # Check if the reservation is already canceled
     if reservation.status == ReservationStatus.CANCELED:
         return {
             "success": False,
             "error": "Reservation is already canceled."
         }
     
-    # Check if the reservation is in the past
     now = datetime.now()
     if reservation.reservation_date < now:
         return {
@@ -260,7 +239,6 @@ def cancel_reservation(db: Session, reservation_id: int) -> Dict[str, Any]:
             "error": "Cannot cancel a reservation that is in the past."
         }
     
-    # Cancel the reservation
     reservation.cancel()
     db.commit()
     

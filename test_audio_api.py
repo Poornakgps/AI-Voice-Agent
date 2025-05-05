@@ -18,7 +18,6 @@ def test_tts(text, server_url="http://localhost:8000"):
     
     data = response.json()
     
-    # Save audio to file as MP3
     filename = "test_output.mp3"
     with open(filename, "wb") as f:
         f.write(base64.b64decode(data["audio_base64"]))
@@ -50,16 +49,13 @@ def test_full_loop(text, server_url="http://localhost:8000"):
     import openai
     import os
     
-    # Check for OpenAI API key
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         print("Error: OPENAI_API_KEY not found in environment")
         return False
     
-    # Use unique filename to avoid permission issues
     filename = f"test_output_{uuid.uuid4()}.mp3"
     
-    # First create audio with TTS
     print(f"Testing TTS with text: '{text}'")
     response = requests.post(
         f"{server_url}/test/tts",
@@ -72,7 +68,6 @@ def test_full_loop(text, server_url="http://localhost:8000"):
     
     data = response.json()
     
-    # Save audio to file
     try:
         with open(filename, "wb") as f:
             f.write(base64.b64decode(data["audio_base64"]))
@@ -80,7 +75,6 @@ def test_full_loop(text, server_url="http://localhost:8000"):
         print(f"Audio saved to {filename}")
         print(f"Duration: {data['duration']} seconds")
         
-        # Use OpenAI directly for transcription
         client = openai.OpenAI(api_key=api_key)
         
         with open(filename, "rb") as audio_file:
@@ -89,7 +83,6 @@ def test_full_loop(text, server_url="http://localhost:8000"):
                 file=audio_file
             )
         
-        # Compare results
         original = text.lower()
         transcribed = transcription.text.lower()
         

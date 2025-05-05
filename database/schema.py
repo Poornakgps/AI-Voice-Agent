@@ -1,10 +1,3 @@
-# database/schema.py
-"""
-Database schema for the Voice AI Restaurant Agent.
-
-This module defines the SQLAlchemy table definitions and relationships
-for our restaurant database.
-"""
 from sqlalchemy import (
     MetaData, Table, Column, Integer, String, Float, 
     DateTime, Boolean, ForeignKey, Text, Enum, CheckConstraint
@@ -13,10 +6,8 @@ from sqlalchemy.sql import func
 import enum
 from datetime import datetime, timedelta
 
-# Define metadata
 metadata = MetaData()
 
-# Enum for dietary restrictions
 class DietaryRestrictionType(enum.Enum):
     VEGETARIAN = "vegetarian"
     VEGAN = "vegan"
@@ -26,7 +17,6 @@ class DietaryRestrictionType(enum.Enum):
     HALAL = "halal"
     KOSHER = "kosher"
 
-# Enum for reservation status
 class ReservationStatus(enum.Enum):
     PENDING = "pending"
     CONFIRMED = "confirmed"
@@ -34,9 +24,7 @@ class ReservationStatus(enum.Enum):
     COMPLETED = "completed"
     NO_SHOW = "no_show"
 
-# Table Definitions
 
-# Menu Categories
 menu_categories = Table(
     "menu_categories",
     metadata,
@@ -48,7 +36,6 @@ menu_categories = Table(
     Column("updated_at", DateTime, default=func.now(), onupdate=func.now()),
 )
 
-# Menu Items
 menu_items = Table(
     "menu_items",
     metadata,
@@ -67,7 +54,6 @@ menu_items = Table(
     CheckConstraint("spiciness_level BETWEEN 0 AND 5", name="ck_spiciness_level_range"),
 )
 
-# Ingredients
 ingredients = Table(
     "ingredients",
     metadata,
@@ -79,7 +65,6 @@ ingredients = Table(
     Column("updated_at", DateTime, default=func.now(), onupdate=func.now()),
 )
 
-# Menu Item Ingredients (Many-to-Many)
 menu_item_ingredients = Table(
     "menu_item_ingredients",
     metadata,
@@ -89,7 +74,6 @@ menu_item_ingredients = Table(
     Column("created_at", DateTime, default=func.now()),
 )
 
-# Dietary Restrictions
 dietary_restrictions = Table(
     "dietary_restrictions",
     metadata,
@@ -105,7 +89,6 @@ dietary_restrictions = Table(
     Column("updated_at", DateTime, default=func.now(), onupdate=func.now()),
 )
 
-# Menu Item Dietary Restrictions (Many-to-Many)
 menu_item_dietary_restrictions = Table(
     "menu_item_dietary_restrictions",
     metadata,
@@ -114,7 +97,6 @@ menu_item_dietary_restrictions = Table(
     Column("created_at", DateTime, default=func.now()),
 )
 
-# Special Pricing
 special_pricing = Table(
     "special_pricing",
     metadata,
@@ -131,7 +113,6 @@ special_pricing = Table(
     CheckConstraint("end_date > start_date", name="ck_special_pricing_date_range"),
 )
 
-# Reservations
 reservations = Table(
     "reservations",
     metadata,
@@ -149,7 +130,6 @@ reservations = Table(
     CheckConstraint("reservation_date > created_at", name="ck_reservation_future_date"),
 )
 
-# Restaurant Tables
 restaurant_tables = Table(
     "restaurant_tables",
     metadata,
@@ -163,7 +143,6 @@ restaurant_tables = Table(
     CheckConstraint("capacity > 0", name="ck_table_capacity_positive"),
 )
 
-# Reservation Tables (Many-to-Many)
 reservation_tables = Table(
     "reservation_tables",
     metadata,

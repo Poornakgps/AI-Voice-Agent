@@ -6,7 +6,7 @@ import base64
 import tempfile
 import os
 from typing import Optional
-
+import openai
 from app.config import settings
 from app.core.models import VoiceSettings, TTSResponse
 
@@ -16,7 +16,6 @@ async def synthesize_speech(text: str, voice_settings: Optional[VoiceSettings] =
     """Synthesize speech from text using OpenAI TTS API."""
     logger.info(f"Synthesizing speech: {text[:50]}{'...' if len(text) > 50 else ''}")
     
-    # Use OpenAI TTS if API key is available
     if settings.OPENAI_API_KEY:
         try:
             return await _synthesize_with_openai(text, voice_settings)
@@ -26,39 +25,33 @@ async def synthesize_speech(text: str, voice_settings: Optional[VoiceSettings] =
     else:
         logger.info("No OpenAI API key, using mock TTS")
     
-    # Fall back to mock implementation
     return _get_mock_tts_response(text)
 
 async def _synthesize_with_openai(text: str, voice_settings: Optional[VoiceSettings] = None) -> TTSResponse:
     """Synthesize speech using OpenAI's TTS API."""
-    import openai
+    
     
     client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
     
-    # Set voice and model based on settings
-    voice = "alloy"  # Default voice
+    voice = "alloy"  
     if voice_settings:
         if "female" in voice_settings.gender.lower():
-            voice = "nova"  # Female voice
+            voice = "nova"  
         else:
-            voice = "echo"  # Male voice
+            voice = "echo"  
     
-    # Create a temporary file to store the audio
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
         temp_file_path = temp_file.name
     
     try:
-        # Generate speech
         response = client.audio.speech.create(
             model="tts-1",
             voice=voice,
             input=text
         )
         
-        # Save to temporary file
         response.stream_to_file(temp_file_path)
         
-        # Read the file and encode to base64
         with open(temp_file_path, "rb") as f:
             audio_content = f.read()
         
@@ -74,7 +67,6 @@ async def _synthesize_with_openai(text: str, voice_settings: Optional[VoiceSetti
             content_type="audio/mp3"
         )
     finally:
-        # Clean up temporary file
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 

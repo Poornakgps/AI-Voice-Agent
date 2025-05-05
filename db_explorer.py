@@ -1,8 +1,3 @@
-"""
-Interactive database explorer for the Voice AI Restaurant Agent.
-
-This script provides a simple CLI for exploring the restaurant database.
-"""
 import os
 import sys
 from datetime import datetime

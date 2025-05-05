@@ -6,7 +6,7 @@ import os
 import httpx
 import tempfile
 from typing import Optional
-
+import openai
 from app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -15,16 +15,13 @@ async def transcribe_audio(audio_url: str) -> str:
     """Transcribe audio from a URL using OpenAI Whisper API."""
     logger.info(f"Transcribing audio from URL: {audio_url}")
     
-    # Use OpenAI API if key is available
     if settings.OPENAI_API_KEY:
         try:
-            # Download the audio file
             audio_data = await _download_audio(audio_url)
             if not audio_data:
                 logger.error(f"Failed to download audio from {audio_url}")
                 return _get_mock_transcription(audio_url)
             
-            # Transcribe with OpenAI Whisper
             return await _transcribe_with_openai(audio_data)
         except Exception as e:
             logger.error(f"Error transcribing with OpenAI: {str(e)}")
@@ -47,17 +44,15 @@ async def _download_audio(audio_url: str) -> Optional[bytes]:
 
 async def _transcribe_with_openai(audio_data: bytes) -> str:
     """Transcribe audio using OpenAI's Whisper API."""
-    import openai
+    
     
     client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
     
-    # Save to temporary file
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
         temp_file.write(audio_data)
         temp_file_path = temp_file.name
     
     try:
-        # Transcribe with Whisper
         with open(temp_file_path, "rb") as audio_file:
             transcript = client.audio.transcriptions.create(
                 model="whisper-1",
@@ -66,7 +61,6 @@ async def _transcribe_with_openai(audio_data: bytes) -> str:
         
         return transcript.text
     finally:
-        # Clean up temp file
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
@@ -74,7 +68,6 @@ def _get_mock_transcription(audio_url: str) -> str:
     """Generate a mock transcription based on the URL."""
     url_lower = audio_url.lower()
     
-    # Basic pattern matching for common restaurant queries
     if "menu" in url_lower:
         return "What's on your menu?"
     elif "special" in url_lower:

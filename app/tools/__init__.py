@@ -1,7 +1,3 @@
-# app/tools/__init__.py
-"""
-Tool implementations for the Voice AI Restaurant Agent.
-"""
 from app.tools.menu_query import (
     get_menu_categories, get_menu_items_by_category,
     search_menu_items, get_menu_items_by_dietary_restriction

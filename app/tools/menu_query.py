@@ -1,9 +1,3 @@
-# app/tools/menu_query.py
-"""
-Menu query tools for the Voice AI Restaurant Agent.
-
-This module provides functions to query menu information.
-"""
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from database.models import MenuCategory, MenuItem, DietaryRestriction, DietaryRestrictionType
@@ -109,7 +103,6 @@ def get_menu_items_by_dietary_restriction(
     Returns:
         List of menu items with the given dietary restriction
     """
-    # Convert string to enum
     try:
         enum_type = DietaryRestrictionType(restriction_type)
     except ValueError:

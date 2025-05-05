@@ -1,9 +1,3 @@
-# database/mock_data.py
-"""
-Mock data for the restaurant database with Indian cuisine.
-
-This module provides functions to seed the database with realistic test data.
-"""
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import random

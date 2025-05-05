@@ -1,9 +1,3 @@
-# database/repository.py
-"""
-Data repository pattern implementation for the Voice AI Restaurant Agent.
-
-This module provides a clean abstraction layer for database operations.
-"""
 from typing import List, Optional, Dict, Any, Type, TypeVar, Generic, Union
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
@@ -14,8 +8,7 @@ from database.models import (
     ReservationStatus
 )
 
-# Type variable for generic repository
-T = TypeVar('T', bound=Base)
+T = TypeVar('T', bound=Base) # type: ignore
 
 class Repository(Generic[T]):
     """Base repository class for database operations."""
@@ -346,7 +339,6 @@ class ReservationRepository(Repository[Reservation]):
         Returns:
             List of reservations for the date
         """
-        # Create start and end of the day
         start_date = datetime(date.year, date.month, date.day, 0, 0, 0)
         end_date = datetime(date.year, date.month, date.day, 23, 59, 59)
         
@@ -424,10 +416,6 @@ class ReservationRepository(Repository[Reservation]):
         Returns:
             True if there is availability, False otherwise
         """
-        # This is a simplified implementation
-        # In a real application, you would check table availability
-        
-        # Get reservations within a 2-hour window
         window_start = date - timedelta(hours=1)
         window_end = date + timedelta(hours=1)
         
@@ -441,7 +429,6 @@ class ReservationRepository(Repository[Reservation]):
             .scalar()
         )
         
-        # For simplicity, let's say we can handle 10 reservations per 2-hour window
         return reservations_in_window < 10
 
 
@@ -462,7 +449,6 @@ class RestaurantTableRepository(Repository[RestaurantTable]):
         Returns:
             List of available tables
         """
-        # Get tables with sufficient capacity
         suitable_tables = (
             self.session.query(self.model)
             .filter(
@@ -471,12 +457,10 @@ class RestaurantTableRepository(Repository[RestaurantTable]):
             )
             .all()
         )
-        
-        # Get reservations within a 2-hour window
+
         window_start = date - timedelta(hours=1)
         window_end = date + timedelta(hours=1)
-        
-        # Get a list of reserved table IDs
+
         reserved_table_ids_query = (
             self.session.query(RestaurantTable.id)
             .join(RestaurantTable.reservations)
@@ -487,10 +471,8 @@ class RestaurantTableRepository(Repository[RestaurantTable]):
             )
         )
         
-        # Execute the query and get a list of IDs
         reserved_table_ids = [row[0] for row in reserved_table_ids_query.all()]
         
-        # Filter out reserved tables
         available_tables = [
             table for table in suitable_tables
             if table.id not in reserved_table_ids

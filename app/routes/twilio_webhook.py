@@ -36,10 +36,8 @@ def validate_twilio_request(request: Request, form_data) -> bool:
     if not twilio_signature:
         return False
     
-    # Convert to dict for validation
     form_dict = dict(form_data)
     
-    # Use Twilio's validator
     from twilio.request_validator import RequestValidator
     validator = RequestValidator(settings.TWILIO_API_SECRET)
     
@@ -115,10 +113,8 @@ async def transcribe_webhook(request: Request, db: Session = Depends(get_db_depe
     
     logger.info(f"Recording received: {recording_sid} from call {call_sid}")
 
-    # Check if transcript was directly provided (for testing)
     transcript = form_data.get("Transcript")
     
-    # Debug DB connection
     try:
         category_count = db.query(MenuCategory).count()
         logger.info(f"DB check: Found {category_count} menu categories")
@@ -135,10 +131,8 @@ async def transcribe_webhook(request: Request, db: Session = Depends(get_db_depe
     agent = get_or_create_agent(call_sid, db)
     
     try:
-        # If transcript is directly provided (for testing), use it
         if transcript:
             logger.info(f"Using provided transcript: '{transcript}'")
-        # Otherwise try to transcribe from the recording URL
         elif recording_url:
             transcript = await transcribe_audio(recording_url)
         else:
@@ -150,7 +144,6 @@ async def transcribe_webhook(request: Request, db: Session = Depends(get_db_depe
         
         logger.info(f"Processing transcript: '{transcript}'")
         
-        # Process the transcript with the agent
         agent_response = agent.process_message(transcript)
         
         logger.info(f"Agent response: '{agent_response}'")

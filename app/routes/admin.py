@@ -7,12 +7,10 @@ from typing import List, Dict, Any, Optional
 import logging
 from app.config import settings
 
-# Set up logger
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Simple mock authentication for admin routes
 def admin_auth_required():
     """
     Mock authentication middleware for admin endpoints.
@@ -26,15 +24,12 @@ def admin_auth_required():
     if settings.DEBUG:
         return True
     
-    # In production, this would check for a valid token/credentials
-    # For now, we just deny access in non-debug mode
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Admin authentication required",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-# Models
 class ConfigItem(BaseModel):
     """Model for configuration items."""
     key: str
@@ -49,7 +44,6 @@ class LogEntry(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
 
-# Admin endpoints
 @router.get("/config", response_model=List[ConfigItem])
 async def get_config(authenticated: bool = Depends(admin_auth_required)):
     """
@@ -61,8 +55,6 @@ async def get_config(authenticated: bool = Depends(admin_auth_required)):
     Returns:
         List[ConfigItem]: List of configuration items.
     """
-    # In a real implementation, you'd get this from a database or config service
-    # For now, we return a subset of settings
     logger.info("Admin requested configuration")
     
     config_items = [
@@ -111,11 +103,8 @@ async def get_logs(
     Returns:
         List[LogEntry]: List of log entries.
     """
-    # In a real implementation, you'd get this from a log store
-    # For now, we return mock data
     logger.info(f"Admin requested logs (limit={limit}, level={level})")
     
-    # Mock log entries
     logs = [
         LogEntry(
             timestamp="2025-05-03T12:00:00Z",
@@ -137,11 +126,9 @@ async def get_logs(
         ),
     ]
     
-    # Filter by level if specified
     if level:
         logs = [log for log in logs if log.level == level.upper()]
     
-    # Limit results
     logs = logs[:limit]
     
     return logs
@@ -157,8 +144,6 @@ async def restart_service(authenticated: bool = Depends(admin_auth_required)):
     Returns:
         dict: Confirmation message.
     """
-    # In a real implementation, this would trigger an actual restart
-    # For now, we just log the request
     logger.warning("Admin requested service restart")
     
     return {"message": "Restart initiated (mock - not actually restarting)"}

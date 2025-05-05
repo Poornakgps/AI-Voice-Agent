@@ -2,17 +2,33 @@
 Configuration settings for the Voice AI Restaurant Agent.
 """
 import os
-from pydantic import field_validator
+import logging
+from pathlib import Path
+from dotenv import load_dotenv
+from pydantic import field_validator, Field
 from pydantic_settings import BaseSettings
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 from functools import lru_cache
+
+# Find the .env file
+project_root = Path(__file__).parent.parent
+env_path = project_root / ".env"
+
+# Load the .env file explicitly
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+    print(f"Loaded environment from {env_path}")
+else:
+    print(f"Warning: .env file not found at {env_path}")
+
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     # Application settings
     APP_NAME: str = "Voice AI Restaurant Agent"
     APP_VERSION: str = "0.1.0"
     APP_DESCRIPTION: str = "A voice AI agent for restaurant interactions"
-    DEBUG: bool = False
+    DEBUG: bool = Field(False, description="Enable debug mode")
     LOG_LEVEL: str = "INFO"
     APP_ENV: str = "production"  # development, staging, production
     
@@ -21,12 +37,13 @@ class Settings(BaseSettings):
     PORT: int = 8000
     
     # OpenAI settings
-    OPENAI_API_KEY: Optional[str] = None
-    OPENAI_ORG_ID: Optional[str] = None
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAIORG_ID: str = os.getenv("OPENAIORG_ID", "")
     
-    # Twilio settings
-    TWILIO_ACCOUNT_SID: Optional[str] = None
-    TWILIO_AUTH_TOKEN: Optional[str] = None
+    # Twilio API settings
+    TWILIO_API_KEY: str = ""
+    TWILIO_API_SECRET: str = ""
+    TWILIO_SID_KEY: str = os.environ.get("TWILIO_SID_KEY", "")
     TWILIO_PHONE_NUMBER: Optional[str] = None
     
     # Database settings
@@ -37,7 +54,29 @@ class Settings(BaseSettings):
     LOCAL_STORAGE_PATH: str = "./storage"
     GCS_BUCKET_NAME: Optional[str] = None
     
+    # Ngrok settings
+    NGROK_AUTHTOKEN: Optional[str] = None
+    
+    # Google Cloud settings
+    GOOGLE_CLOUD_PROJECT: Optional[str] = None
+    GOOGLE_CLOUD_CREDENTIALS: Optional[str] = None
+    GOOGLE_CLOUD_REGION: str = "us-central1"
+    
+    # Force using real OpenAI and Twilio APIs if keys are provided
+    USE_REAL_APIS: bool = True
+    
     # Validators
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug(cls, v):
+        """
+        Parse DEBUG environment variable as boolean.
+        Accepts various string representations of boolean values.
+        """
+        if isinstance(v, str):
+            return v.lower() in ("true", "1", "t", "yes", "y")
+        return bool(v)
+    
     @field_validator("LOG_LEVEL")
     @classmethod
     def validate_log_level(cls, v):
@@ -65,11 +104,45 @@ class Settings(BaseSettings):
             raise ValueError(f"STORAGE_TYPE must be one of {allowed_types}")
         return v
     
-    class Config:
-        """Pydantic configuration."""
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
+    @field_validator("OPENAI_API_KEY")
+    @classmethod
+    def validate_openai_key(cls, v):
+        """Validate OpenAI API key is properly set."""
+        if v and v.strip() and "dummy" not in v:
+            logger.info("OpenAI API key is configured")
+            return v.strip()
+        return ""
+    
+    @field_validator("OPENAIORG_ID")
+    @classmethod
+    def validate_openai_org_id(cls, v):
+        """Validate OpenAI organization ID is properly set."""
+        if v is None:
+            return None
+        
+        # Convert empty strings to None
+        if not v.strip() or "dummy" in v:
+            logger.info("No valid OpenAI organization ID provided, will use API key without organization")
+            return None
+        
+        logger.info("OpenAI organization ID is configured")
+        return v.strip()
+    
+    @field_validator("TWILIO_API_KEY")
+    @classmethod
+    def validate_twilio_key(cls, v):
+        """Validate Twilio API key is properly set."""
+        if v and v.strip() and "dummy" not in v:
+            logger.info("Twilio API key is configured")
+            return v.strip()
+        return ""
+    
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": True,
+        "extra": "ignore",
+    }
 
 @lru_cache()
 def get_settings() -> Settings:
@@ -83,6 +156,35 @@ def get_settings() -> Settings:
 # Export settings instance
 settings = get_settings()
 
-# For debug purposes
+# Helper function for OpenAI client initialization
+def get_openai_client_params():
+    """
+    Get parameters for OpenAI client initialization.
+    
+    Returns:
+        dict: Parameters for OpenAI client
+    """
+    params = {"api_key": settings.OPENAI_API_KEY}
+    
+    # Only include organization ID if it's set
+    if settings.OPENAIORG_ID is not None:
+        params["organization"] = settings.OPENAIORG_ID
+    
+    # Print the parameters for debugging (remove in production)
+    print(f"OpenAI client parameters: {params}")
+        
+    return params
+
 if __name__ == "__main__":
-    print(settings.dict())
+    # print("\nEnvironment variable values:")
+    # print(f"OPENAI_API_KEY from env: {os.getenv('OPENAI_API_KEY', 'Not found')}")
+    # print(f"OPENAI_ORG_ID from env: {os.getenv('OPENAI_ORG_ID', 'Not found')}")
+    
+    # print("\nSettings values:")
+    # print(f"OpenAI API Key: {'Configured' if settings.OPENAI_API_KEY else 'Not configured'}")
+    # print(f"OpenAI Org ID: {'Configured as: ' + settings.OPENAI_ORG_ID if settings.OPENAI_ORG_ID else 'Not configured'}")
+    # print(f"Twilio API Key: {'Configured' if settings.TWILIO_API_KEY else 'Not configured'}")
+    # print(f"Twilio API Secret: {'Configured' if settings.TWILIO_API_SECRET else 'Not configured'}")
+    
+    # print("\nOpenAI client parameters:")
+    print(get_openai_client_params())

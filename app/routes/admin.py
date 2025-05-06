@@ -1,6 +1,4 @@
-"""
-Admin endpoints for system management and configuration.
-"""
+"""Admin endpoints for system management and configuration."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -8,22 +6,12 @@ import logging
 from app.config import settings
 
 logger = logging.getLogger(__name__)
-
 router = APIRouter()
 
 def admin_auth_required():
-    """
-    Mock authentication middleware for admin endpoints.
-    
-    In a real implementation, this would validate tokens, API keys, etc.
-    For now, it just checks if DEBUG mode is enabled.
-    
-    Returns:
-        bool: Always True in debug mode, otherwise raises an exception.
-    """
+    """Simple authentication middleware for admin endpoints."""
     if settings.DEBUG:
         return True
-    
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Admin authentication required",
@@ -46,45 +34,15 @@ class LogEntry(BaseModel):
 
 @router.get("/config", response_model=List[ConfigItem])
 async def get_config(authenticated: bool = Depends(admin_auth_required)):
-    """
-    Get current application configuration.
-    
-    Args:
-        authenticated: Dependency injection for authentication.
-        
-    Returns:
-        List[ConfigItem]: List of configuration items.
-    """
+    """Get current application configuration."""
     logger.info("Admin requested configuration")
     
-    config_items = [
-        ConfigItem(
-            key="APP_NAME",
-            value=settings.APP_NAME,
-            description="Application name",
-            editable=False,
-        ),
-        ConfigItem(
-            key="APP_VERSION", 
-            value=settings.APP_VERSION,
-            description="Application version",
-            editable=False,
-        ),
-        ConfigItem(
-            key="DEBUG",
-            value=settings.DEBUG,
-            description="Debug mode",
-            editable=True,
-        ),
-        ConfigItem(
-            key="LOG_LEVEL",
-            value=settings.LOG_LEVEL,
-            description="Logging level",
-            editable=True,
-        ),
+    return [
+        ConfigItem(key="APP_NAME", value=settings.APP_NAME, description="Application name", editable=False),
+        ConfigItem(key="APP_VERSION", value=settings.APP_VERSION, description="Application version", editable=False),
+        ConfigItem(key="DEBUG", value=settings.DEBUG, description="Debug mode", editable=True),
+        ConfigItem(key="LOG_LEVEL", value=settings.LOG_LEVEL, description="Logging level", editable=True),
     ]
-    
-    return config_items
 
 @router.get("/logs", response_model=List[LogEntry])
 async def get_logs(
@@ -92,19 +50,10 @@ async def get_logs(
     limit: int = 100,
     level: Optional[str] = None,
 ):
-    """
-    Get recent application logs.
-    
-    Args:
-        authenticated: Dependency injection for authentication.
-        limit: Maximum number of log entries to return.
-        level: Filter logs by level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-        
-    Returns:
-        List[LogEntry]: List of log entries.
-    """
+    """Get recent application logs."""
     logger.info(f"Admin requested logs (limit={limit}, level={level})")
     
+    # Sample logs for development/testing
     logs = [
         LogEntry(
             timestamp="2025-05-03T12:00:00Z",
@@ -129,21 +78,10 @@ async def get_logs(
     if level:
         logs = [log for log in logs if log.level == level.upper()]
     
-    logs = logs[:limit]
-    
-    return logs
+    return logs[:limit]
 
 @router.post("/restart", status_code=status.HTTP_202_ACCEPTED)
 async def restart_service(authenticated: bool = Depends(admin_auth_required)):
-    """
-    Trigger a service restart.
-    
-    Args:
-        authenticated: Dependency injection for authentication.
-        
-    Returns:
-        dict: Confirmation message.
-    """
+    """Trigger a service restart."""
     logger.warning("Admin requested service restart")
-    
     return {"message": "Restart initiated (mock - not actually restarting)"}

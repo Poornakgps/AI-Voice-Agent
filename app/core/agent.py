@@ -10,7 +10,6 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
-# Import mock for development without API keys
 from tests.mocks.mock_openai import MockOpenAIClient
 
 from app.config import settings
@@ -116,17 +115,24 @@ class RestaurantAgent:
         """Initialize the OpenAI client."""
         # Use real OpenAI client when API key is available
         if settings.OPENAI_API_KEY:
-            import openai
-            client = openai.OpenAI(
-                api_key=settings.OPENAI_API_KEY,
-                organization=settings.OPENAIORG_ID
-            )
-            logger.info("Using real OpenAI client")
-            return client
-        else:
-            # Fall back to mock for development without API key
-            logger.warning("No OpenAI API key found, using mock client")
-            return MockOpenAIClient()
+            try:
+                import openai
+                client_params = {"api_key": settings.OPENAI_API_KEY}
+                
+                # Add organization ID if available
+                if settings.OPENAIORG_ID:
+                    client_params["organization"] = settings.OPENAIORG_ID
+                
+                # Initialize client
+                client = openai.OpenAI(**client_params)
+                logger.info("Using real OpenAI client")
+                return client
+            except Exception as e:
+                logger.warning(f"Error initializing OpenAI client: {str(e)}")
+        
+        # Fall back to mock client
+        logger.info("Using mock OpenAI client")
+        return MockOpenAIClient()
     
     def _initialize_conversation(self):
         """Initialize the conversation with system prompt."""

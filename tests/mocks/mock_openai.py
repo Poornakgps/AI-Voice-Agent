@@ -1,9 +1,3 @@
-"""
-Mock implementation of the OpenAI client for testing and development.
-
-This module provides a simplified mock of the OpenAI client for testing and
-development without requiring API keys.
-"""
 import logging
 import json
 import re

@@ -5,10 +5,8 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
-# Test client
 client = TestClient(app)
 
-# Status route tests
 def test_health_endpoint():
     """Test the health check endpoint."""
     response = client.get("/health")
@@ -36,7 +34,6 @@ def test_metrics_endpoint():
     assert "active_connections" in data
     assert isinstance(data["uptime"], (int, float))
 
-# Admin route tests
 def test_admin_config_endpoint():
     """Test the admin config endpoint."""
     response = client.get("/admin/config")
@@ -53,7 +50,6 @@ def test_admin_logs_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
-    # Check first log entry if available
     if len(data) > 0:
         assert "timestamp" in data[0]
         assert "level" in data[0]
@@ -66,23 +62,19 @@ def test_admin_logs_with_params():
     data = response.json()
     assert isinstance(data, list)
     assert len(data) <= 2
-    # Check log level if entries exist
     for log in data:
         assert log["level"] == "INFO"
 
-# Twilio webhook tests
 def test_voice_webhook():
     """Test the Twilio voice webhook."""
     response = client.post("/webhook/voice")
     assert response.status_code == 200
-    # Check if response is valid TwiML
     assert "<?xml" in response.text
     assert "<Response>" in response.text
     assert "<Say>" in response.text
 
 def test_transcribe_webhook():
     """Test the Twilio transcribe webhook."""
-    # Minimal form data needed for the test
     form_data = {
         "CallSid": "test-call-sid",
         "RecordingUrl": "https://example.com/recording.mp3",
@@ -91,7 +83,6 @@ def test_transcribe_webhook():
     
     response = client.post("/webhook/transcribe", data=form_data)
     assert response.status_code == 200
-    # Check if response is valid TwiML
     assert "<?xml" in response.text
     assert "<Response>" in response.text
     assert "<Say>" in response.text
@@ -118,7 +109,6 @@ def test_fallback_webhook():
     
     response = client.post("/webhook/fallback", data=form_data)
     assert response.status_code == 200
-    # Check if response is valid TwiML
     assert "<?xml" in response.text
     assert "<Response>" in response.text
     assert "<Say>" in response.text

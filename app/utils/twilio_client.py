@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 def create_twilio_client():
     """Create a properly configured Twilio client."""
-    # Check for Account SID + Auth Token first
     if settings.TWILIO_SID_KEY and settings.TWILIO_API_SECRET:
         try:
             client = Client(settings.TWILIO_SID_KEY, settings.TWILIO_API_SECRET)
@@ -19,7 +18,6 @@ def create_twilio_client():
         except Exception as e:
             logger.error(f"Failed to initialize Twilio client with Account SID: {str(e)}")
     
-    # Fallback to API Key + API Secret
     if settings.TWILIO_API_KEY and settings.TWILIO_API_SECRET:
         try:
             client = Client(settings.TWILIO_API_KEY, settings.TWILIO_API_SECRET)
@@ -48,7 +46,6 @@ def send_sms(to_number, from_number, message):
         return {"status": "error", "message": "Twilio client initialization failed"}
     
     try:
-        # Send the message
         message = client.messages.create(
             body=message,
             from_=from_number,

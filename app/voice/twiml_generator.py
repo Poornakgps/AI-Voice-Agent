@@ -46,7 +46,6 @@ class TwiMLGenerator:
         Returns:
             TwiML response string
         """
-        # Clean up the message for TTS
         clean_message = self._clean_message_for_tts(message)
         
         twiml = f"""
@@ -154,16 +153,13 @@ class TwiMLGenerator:
         Returns:
             Cleaned message
         """
-        # Replace any characters that might cause issues with TTS
         message = message.replace("&", "and")
         
-        # Remove markdown formatting
         message = message.replace("*", "")
         message = message.replace("_", "")
         message = message.replace("#", "")
         message = message.replace("`", "")
         
-        # Remove excessive whitespace
         message = " ".join(message.split())
         
         return message

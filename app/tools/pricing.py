@@ -1,9 +1,3 @@
-# app/tools/pricing.py
-"""
-Pricing tools for the Voice AI Restaurant Agent.
-
-This module provides functions to query and calculate pricing information.
-"""
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from database.models import MenuItem, SpecialPricing
@@ -28,7 +22,6 @@ def get_item_price(db: Session, item_id: int) -> Optional[Dict[str, Any]]:
     
     current_price = item.get_current_price()
     
-    # Check if there's a special price
     special_repo = SpecialPricingRepository(db)
     special_pricing = special_repo.get_active_for_menu_item(item_id)
     
@@ -40,7 +33,6 @@ def get_item_price(db: Session, item_id: int) -> Optional[Dict[str, Any]]:
         "has_special_pricing": special_pricing is not None
     }
     
-    # Add special pricing details if available
     if special_pricing:
         price_info["special_pricing"] = {
             "price": special_pricing.special_price,
@@ -120,11 +112,9 @@ def calculate_order_total(db: Session, items: List[Dict[str, Any]]) -> Dict[str,
         
         subtotal += item_total
     
-    # Calculate tax (e.g., 8.5%)
     tax_rate = 0.085
     tax = subtotal * tax_rate
     
-    # Calculate total
     total = subtotal + tax
     
     return {

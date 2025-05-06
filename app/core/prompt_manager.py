@@ -23,14 +23,12 @@ class PromptManager:
         Args:
             template_dir: Directory containing prompt templates
         """
-        # Default template directory is relative to this file
         if template_dir is None:
             current_dir = Path(__file__).parent
             template_dir = str(current_dir / "templates")
         
         self.template_dir = template_dir
         
-        # Initialize Jinja2 environment
         try:
             self.env = Environment(
                 loader=FileSystemLoader(self.template_dir),
@@ -63,7 +61,6 @@ class PromptManager:
                 logger.warning(f"Error rendering system prompt template: {str(e)}")
                 logger.warning("Using default system prompt")
         
-        # Default system prompt if template rendering fails
         return self._get_default_system_prompt()
     
     def get_welcome_message(self) -> str:
@@ -83,7 +80,6 @@ class PromptManager:
                 logger.warning(f"Error rendering welcome message template: {str(e)}")
                 logger.warning("Using default welcome message")
         
-        # Default welcome message if template rendering fails
         return self._get_default_welcome_message()
     
     def get_goodbye_message(self) -> str:
@@ -103,7 +99,6 @@ class PromptManager:
                 logger.warning(f"Error rendering goodbye message template: {str(e)}")
                 logger.warning("Using default goodbye message")
         
-        # Default goodbye message if template rendering fails
         return self._get_default_goodbye_message()
     
     def get_fallback_message(self) -> str:
@@ -121,7 +116,6 @@ class PromptManager:
                 logger.warning(f"Error rendering fallback message template: {str(e)}")
                 logger.warning("Using default fallback message")
         
-        # Default fallback message if template rendering fails
         return self._get_default_fallback_message()
     
     def _get_default_system_prompt(self) -> str:

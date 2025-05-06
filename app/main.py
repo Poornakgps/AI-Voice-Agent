@@ -1,6 +1,3 @@
-"""
-Main application entry point for the Voice AI Restaurant Agent.
-"""
 import os
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,8 +7,8 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.routes import status, admin, twilio_webhook
+from app.routes import audio_test
 
-# Configure logging
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -23,17 +20,13 @@ async def lifespan(app: FastAPI):
     """
     Handle application startup and shutdown events.
     """
-    # Startup: Initialize resources
     logger.info("Starting Voice AI Restaurant Agent application")
-    # Here you would initialize connections, load models, etc.
     
     yield
-    
-    # Shutdown: Clean up resources
-    logger.info("Shutting down Voice AI Restaurant Agent application")
-    # Here you would close connections, release resources, etc.
 
-# Create FastAPI application
+    logger.info("Shutting down Voice AI Restaurant Agent application")
+
+
 app = FastAPI(
     title=settings.APP_NAME,
     description=settings.APP_DESCRIPTION,
@@ -41,16 +34,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development - restrict in production
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Add error handling middleware
+app.include_router(audio_test.router, tags=["Testing"])
 @app.middleware("http")
 async def error_handling_middleware(request: Request, call_next):
     """
@@ -65,7 +56,6 @@ async def error_handling_middleware(request: Request, call_next):
             content={"error": "Internal Server Error", "detail": str(e) if settings.DEBUG else None},
         )
 
-# Add request logging middleware
 @app.middleware("http")
 async def request_logging_middleware(request: Request, call_next):
     """
@@ -83,12 +73,10 @@ async def request_logging_middleware(request: Request, call_next):
     
     return response
 
-# Include routers
 app.include_router(status.router, tags=["Status"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 app.include_router(twilio_webhook.router, prefix="/webhook", tags=["Webhook"])
 
-# Root endpoint for API documentation redirect
 @app.get("/", include_in_schema=False)
 async def redirect_to_docs():
     """

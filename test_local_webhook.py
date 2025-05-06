@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-"""
-Simple script to test your Twilio webhooks locally without default messages.
-"""
 import requests
 import uuid
 import xml.etree.ElementTree as ET
@@ -9,7 +5,6 @@ import argparse
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
 def parse_twiml(twiml_text):
@@ -45,10 +40,8 @@ def parse_twiml(twiml_text):
 
 def test_voice_webhook(url):
     """Test the voice webhook with a simple request."""
-    # Generate a unique call SID
     call_sid = f"TEST{uuid.uuid4().hex[:16].upper()}"
     
-    # Get Twilio Account SID from environment or use a dummy one
     account_sid = os.environ.get("TWILIO_SID_KEY", "AC00000000000000000000000000000000")
     
     # Prepare test data
@@ -65,11 +58,9 @@ def test_voice_webhook(url):
     print(f"Sending test request to: {url}")
     
     try:
-        # Send the request
         response = requests.post(url, data=data, timeout=10)
         print(f"Full request data: {data}")
         print(f"Full response: {response.text}")
-        # Check the response
         if response.status_code == 200:
             print("\n✅ Webhook responded with status code 200")
             print("Raw response:")
@@ -77,10 +68,8 @@ def test_voice_webhook(url):
             print(response.text)
             print("-" * 50)
             
-            # Parse the TwiML
             twiml_info = parse_twiml(response.text)
             
-            # Display parsed information
             if twiml_info["say_texts"]:
                 print(f"Agent says: \"{twiml_info['say_texts'][0]}\"")
             else:
@@ -102,20 +91,14 @@ def test_voice_webhook(url):
 
 def test_transcribe_webhook(url, call_sid, message=None):
     """Test the transcribe webhook with a user-provided message."""
-    # If no message provided, prompt the user to input one
     if message is None:
         message = input("Enter message to test (or press Enter for empty message): ").strip()
     
-    # Generate a recording SID
     recording_sid = f"RE{uuid.uuid4().hex[:16].upper()}"
-    
-    # Get Twilio Account SID from environment
     account_sid = os.environ.get("TWILIO_SID_KEY", "AC00000000000000000000000000000000")
     
-    # Create a realistic recording URL
     recording_url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Recordings/{recording_sid}"
     
-    # Prepare test data
     data = {
         "CallSid": call_sid,
         "AccountSid": account_sid,
@@ -125,7 +108,6 @@ def test_transcribe_webhook(url, call_sid, message=None):
         "RecordingDuration": "5",
     }
     
-    # Only add transcript if there is a message
     if message:
         data["Transcript"] = message
     
@@ -133,10 +115,8 @@ def test_transcribe_webhook(url, call_sid, message=None):
     print(f"With message: \"{message}\"" if message else "With empty message")
     
     try:
-        # Send the request
         response = requests.post(url, data=data, timeout=10)
         
-        # Check the response
         if response.status_code == 200:
             print("✅ Webhook responded with status code 200")
             print("Raw response:")
@@ -144,10 +124,8 @@ def test_transcribe_webhook(url, call_sid, message=None):
             print(response.text)
             print("-" * 50)
             
-            # Parse the TwiML
             twiml_info = parse_twiml(response.text)
             
-            # Display parsed information
             if twiml_info["say_texts"]:
                 print(f"Agent replies: \"{twiml_info['say_texts'][0]}\"")
             else:
@@ -189,19 +167,15 @@ def main():
     print("Voice AI Restaurant Agent - Local Webhook Test")
     print("=========================================================")
     
-    # Test voice webhook
     print("\n🔍 Testing voice webhook (call initiation)...")
     voice_response, call_sid = test_voice_webhook(voice_url)
     
     if voice_response and call_sid:
-        # Use provided message or go to interactive mode if empty
         message = args.message if args.message else None
         
-        # Test transcribe webhook
         print("\n🔍 Testing transcribe webhook (message processing)...")
         test_transcribe_webhook(transcribe_url, call_sid, message)
 
-        # Allow for multi-turn conversation in interactive mode
         if not args.message:
             while True:
                 continue_chat = input("\nContinue conversation? (y/n): ").lower()

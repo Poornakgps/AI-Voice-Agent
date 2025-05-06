@@ -1,6 +1,3 @@
-"""
-Configuration settings for the Voice AI Restaurant Agent.
-"""
 import os
 import logging
 from pathlib import Path
@@ -10,11 +7,9 @@ from pydantic_settings import BaseSettings
 from typing import Optional, Dict, Any, Union
 from functools import lru_cache
 
-# Find the .env file
 project_root = Path(__file__).parent.parent
 env_path = project_root / ".env"
 
-# Load the .env file explicitly
 if env_path.exists():
     load_dotenv(dotenv_path=env_path)
     print(f"Loaded environment from {env_path}")
@@ -24,7 +19,6 @@ else:
 logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
-    # Application settings
     APP_NAME: str = "Voice AI Restaurant Agent"
     APP_VERSION: str = "0.1.0"
     APP_DESCRIPTION: str = "A voice AI agent for restaurant interactions"
@@ -32,40 +26,31 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     APP_ENV: str = "production"  # development, staging, production
     
-    # Server settings
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # OpenAI settings
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAIORG_ID: str = os.getenv("OPENAIORG_ID", "")
     
-    # Twilio API settings
     TWILIO_API_KEY: str = ""
     TWILIO_API_SECRET: str = ""
     TWILIO_SID_KEY: str = os.environ.get("TWILIO_SID_KEY", "")
     TWILIO_PHONE_NUMBER: Optional[str] = None
     
-    # Database settings
     DATABASE_URL: str = "sqlite:///./test.db"
     
-    # Storage settings
     STORAGE_TYPE: str = "local"  # local, gcs
     LOCAL_STORAGE_PATH: str = "./storage"
     GCS_BUCKET_NAME: Optional[str] = None
     
-    # Ngrok settings
     NGROK_AUTHTOKEN: Optional[str] = None
     
-    # Google Cloud settings
     GOOGLE_CLOUD_PROJECT: Optional[str] = None
     GOOGLE_CLOUD_CREDENTIALS: Optional[str] = None
     GOOGLE_CLOUD_REGION: str = "us-central1"
     
-    # Force using real OpenAI and Twilio APIs if keys are provided
     USE_REAL_APIS: bool = True
     
-    # Validators
     @field_validator("DEBUG", mode="before")
     @classmethod
     def parse_debug(cls, v):
@@ -120,7 +105,6 @@ class Settings(BaseSettings):
         if v is None:
             return None
         
-        # Convert empty strings to None
         if not v.strip() or "dummy" in v:
             logger.info("No valid OpenAI organization ID provided, will use API key without organization")
             return None
@@ -153,10 +137,8 @@ def get_settings() -> Settings:
     """
     return Settings()
 
-# Export settings instance
 settings = get_settings()
 
-# Helper function for OpenAI client initialization
 def get_openai_client_params():
     """
     Get parameters for OpenAI client initialization.
@@ -166,11 +148,9 @@ def get_openai_client_params():
     """
     params = {"api_key": settings.OPENAI_API_KEY}
     
-    # Only include organization ID if it's set
     if settings.OPENAIORG_ID is not None:
         params["organization"] = settings.OPENAIORG_ID
-    
-    # Print the parameters for debugging (remove in production)
+
     print(f"OpenAI client parameters: {params}")
         
     return params

@@ -1,0 +1,26 @@
+=== Voice AI Restaurant Agent Conversation Log ===
+Started: 2025-05-07 22:21:39
+
+You: hii
+Priya: Hi there! How can I assist you today?
+
+You: what is in the menu?
+Priya: We have several menu categories including Starters, Main Courses, Bread, Rice Dishes, Desserts, Beverages. What would you like to know more about?
+
+You: i want beverages
+Priya: I've looked that up for you. Is there anything specific you'd like to know about our restaurant?
+
+You: beverages
+Priya: Here are our beverage options:
+
+1. **Masala Chai** - A spiced tea with milk for $3.99. It's vegetarian.
+   
+2. **Mango Lassi** - A refreshing yogurt drink with mango pulp for $4.99. It's also vegetarian.
+
+Would you like to order something or know more about any of these?
+
+
+
+Session terminated by user. Goodbye!
+
+Ended: 2025-05-07 22:24:12

@@ -67,19 +67,29 @@ class StreamManager:
     
     async def connect(self, websocket: WebSocket, client_id: str):
         """
-        Set up streaming for an already accepted websocket connection.
+        Accept websocket connection and set up streaming.
         
         Args:
-            websocket: WebSocket connection (already accepted)
+            websocket: WebSocket connection
             client_id: Unique client identifier
         """
-        # NOTE: websocket.accept() is NOT called here anymore - it's handled in the route
+        await websocket.accept()
         self.active_connections[client_id] = websocket
         self.vad_detectors[client_id] = InterruptionDetector()
         self.input_buffers[client_id] = AudioBuffer()
         self.last_activity[client_id] = time.time()
         
         logger.info(f"Client {client_id} connected")
+        
+        # Send initial configuration to client
+        await websocket.send_json({
+            "event": "connected",
+            "config": {
+                "sample_rate": 16000,
+                "channels": 1,
+                "frame_size": 480  # 30ms at 16kHz
+            }
+        })
     
     def disconnect(self, client_id: str):
         """
@@ -190,7 +200,6 @@ class StreamManager:
                 except Exception:
                     pass
             self.disconnect(client_id)
-            
     def save_audio_file(self, client_id: str, file_type: str, data: bytes) -> str:
         """Save audio data as proper WAV file."""
         from pathlib import Path
@@ -220,3 +229,5 @@ class StreamManager:
         
         logger.info(f"Saved {file_type} audio ({len(data)} bytes) to {filepath}")
         return str(filepath)
+    
+stream_manager = StreamManager()

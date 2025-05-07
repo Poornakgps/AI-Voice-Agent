@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.core.agent import RestaurantAgent
 from app.voice.twiml_generator import TwiMLGenerator
-from app.voice.stt import transcribe_audio
+from app.voice.stt import transcribe_audio_stream as transcribe_audio
 from database import get_db_dependency
 from database.models import MenuCategory
 

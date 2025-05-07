@@ -36,6 +36,7 @@ class InterruptionDetector:
         self.frame_duration_ms = frame_duration_ms
         self.frame_size = int(sample_rate * frame_duration_ms / 1000)
         self.vad = webrtcvad.Vad(aggressiveness)
+        self._frame_buffer = bytearray()
         
         self.speech_window = speech_window
         self.silence_window = silence_window
@@ -54,24 +55,40 @@ class InterruptionDetector:
                     f"aggressiveness={aggressiveness}")
     
     def process_frame(self, audio_frame: bytes) -> Tuple[bool, bool]:
-        """
-        Process a single audio frame and detect speech/interruptions.
+        """Process audio frames of variable sizes."""
+        expected_size = self.frame_size * 2  # 16-bit = 2 bytes per sample
         
-        Args:
-            audio_frame: Raw audio data (must be size of frame_size and 16-bit PCM)
-            
-        Returns:
-            Tuple of (is_speech, is_interruption)
-        """
-        if len(audio_frame) != self.frame_size * 2:  # 16-bit = 2 bytes per sample
-            logger.warning(f"Invalid frame size: {len(audio_frame)} bytes, "
-                          f"expected {self.frame_size * 2} bytes")
-            return False, False
+        # Handle variable frame sizes
+        if len(audio_frame) != expected_size:
+            # For larger frames, split into multiple WebRTC VAD-compatible frames
+            if len(audio_frame) > expected_size:
+                results = []
+                # Process multiple frames
+                for i in range(0, len(audio_frame), expected_size):
+                    frame_chunk = audio_frame[i:i+expected_size]
+                    if len(frame_chunk) == expected_size:
+                        speech, interrupt = self._process_standard_frame(frame_chunk)
+                        results.append((speech, interrupt))
+                
+                # Return True for interruption if any frame detected it
+                return any(r[0] for r in results), any(r[1] for r in results)
+            else:
+                # For smaller frames, buffer until we have enough data
+                self._frame_buffer += audio_frame
+                if len(self._frame_buffer) >= expected_size:
+                    frame_to_process = self._frame_buffer[:expected_size]
+                    self._frame_buffer = self._frame_buffer[expected_size:]
+                    return self._process_standard_frame(frame_to_process)
+                return False, False
         
+        return self._process_standard_frame(audio_frame)
+
+    def _process_standard_frame(self, frame: bytes) -> Tuple[bool, bool]:
+        """Process a standard-sized frame."""
         try:
-            is_speech = self.vad.is_speech(audio_frame, self.sample_rate)
+            is_speech = self.vad.is_speech(frame, self.sample_rate)
         except Exception as e:
-            logger.error(f"VAD processing error: {str(e)}")
+            logger.error(f"VAD error: {str(e)}")
             return False, False
         
         self.speech_frames.append(is_speech)
@@ -110,3 +127,4 @@ class InterruptionDetector:
         self.speech_frames.clear()
         self.consecutive_speech = 0
         self.consecutive_silence = 0
+        self._frame_buffer = bytearray()  # Also reset the buffer

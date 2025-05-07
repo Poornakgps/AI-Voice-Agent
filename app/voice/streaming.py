@@ -7,6 +7,7 @@ import time
 from typing import Dict, List, Optional, Callable, Any, AsyncGenerator
 import numpy as np
 from fastapi import WebSocket, WebSocketDisconnect
+from pathlib import Path
 
 from app.voice.vad import InterruptionDetector
 
@@ -72,7 +73,6 @@ class StreamManager:
             websocket: WebSocket connection
             client_id: Unique client identifier
         """
-        await websocket.accept()
         self.active_connections[client_id] = websocket
         self.vad_detectors[client_id] = InterruptionDetector()
         self.input_buffers[client_id] = AudioBuffer()
@@ -115,13 +115,7 @@ class StreamManager:
         logger.info(f"Client {client_id} disconnected")
     
     async def receive_audio(self, client_id: str, audio_data: bytes):
-        """
-        Process incoming audio from client.
-        
-        Args:
-            client_id: Client identifier
-            audio_data: Raw audio data
-        """
+        """Process incoming audio from client."""
         if client_id not in self.active_connections:
             logger.warning(f"Received audio from unknown client: {client_id}")
             return
@@ -139,7 +133,7 @@ class StreamManager:
                 logger.info(f"Interruption detected for client {client_id}")
                 handler = self.interrupt_handlers[client_id]
                 asyncio.create_task(handler(client_id))
-    
+        
     async def send_audio(self, client_id: str, audio_data: bytes):
         """
         Send audio to client.
@@ -205,3 +199,32 @@ class StreamManager:
                 except Exception:
                     pass
             self.disconnect(client_id)
+    def save_audio_file(self, client_id: str, file_type: str, data: bytes) -> str:
+        """Save audio data as proper WAV file."""
+        from pathlib import Path
+        import time
+        import wave
+        import io
+        
+        timestamp = int(time.time())
+        directory = Path("storage/audio")
+        directory.mkdir(parents=True, exist_ok=True)
+        
+        filename = f"{client_id}_{file_type}_{timestamp}.wav"
+        filepath = directory / filename
+        
+        # Check if data already has WAV headers
+        if data[:4] == b'RIFF' and data[8:12] == b'WAVE':
+            # Already a WAV file, just save it
+            with open(filepath, "wb") as f:
+                f.write(data)
+        else:
+            # Create a proper WAV file from raw PCM
+            with wave.open(str(filepath), 'wb') as wav_file:
+                wav_file.setnchannels(1)  # Mono
+                wav_file.setsampwidth(2)  # 16-bit
+                wav_file.setframerate(16000)  # 16kHz
+                wav_file.writeframes(data)
+        
+        logger.info(f"Saved {file_type} audio ({len(data)} bytes) to {filepath}")
+        return str(filepath)

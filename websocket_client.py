@@ -28,26 +28,31 @@ class WebSocketClient:
             return False
     
     async def receive_messages(self):
-        """Receive and process messages."""
         try:
             while self.connected:
-                message = await self.ws.recv()
-                
-                if isinstance(message, str):
-                    # JSON message
-                    data = json.loads(message)
-                    if "event" in data and data["event"] == "connected":
-                        self.config = data.get("config", {})
-                        print(f"Received config: {self.config}")
-                elif isinstance(message, bytes):
-                    # Audio data
-                    self.received_audio.extend(message)
-                    print(f"Received {len(message)} bytes of audio")
-        except websockets.exceptions.ConnectionClosed:
-            print("Connection closed")
-            self.connected = False
+                try:
+                    message = await asyncio.wait_for(self.ws.recv(), timeout=5.0)
+                    
+                    if isinstance(message, str):
+                        try:
+                            data = json.loads(message)
+                            print(f"Received JSON: {data}")
+                            if "event" in data and data["event"] == "connected":
+                                self.config = data.get("config", {})
+                                print(f"Received config: {self.config}")
+                        except json.JSONDecodeError:
+                            print(f"Received text: {message}")
+                    elif isinstance(message, bytes):
+                        self.received_audio.extend(message)
+                        print(f"Received {len(message)} bytes of audio")
+                except asyncio.TimeoutError:
+                    print("Timeout waiting for message")
+                except websockets.exceptions.ConnectionClosed as e:
+                    print(f"Connection closed: {e}")
+                    self.connected = False
+                    break
         except Exception as e:
-            print(f"Error receiving messages: {str(e)}")
+            print(f"Error in receive_messages: {str(e)}")
             self.connected = False
     
     async def send_audio_file(self):
@@ -56,6 +61,10 @@ class WebSocketClient:
             print(f"Audio file not found: {self.audio_file}")
             return False
         
+        if not self.connected:
+            print("Cannot send audio - connection already closed")
+            return False
+            
         try:
             # Open the WAV file
             with wave.open(self.audio_file, 'rb') as wav:
@@ -66,20 +75,25 @@ class WebSocketClient:
                 print(f"Sending audio: {self.audio_file}")
                 print(f"Frame rate: {frame_rate}Hz, Channels: {channels}, Sample width: {sample_width}")
                 
-                # Read in chunks of 30ms
-                chunk_size = int(frame_rate * 0.03) * channels * sample_width
+                # Use frame size from server config or default
+                frame_size = 480  # Default: 30ms at 16kHz
+                if self.config and 'frame_size' in self.config:
+                    frame_size = self.config['frame_size']
+                
+                # Calculate chunk size in bytes
+                chunk_size = frame_size * channels * sample_width
                 
                 while True:
-                    chunk = wav.readframes(chunk_size)
+                    chunk = wav.readframes(frame_size)
                     if not chunk:
                         break
                     
                     if not self.connected:
-                        break
+                        print("Connection closed during transmission")
+                        return False
                     
                     await self.ws.send(chunk)
-                    # Simulate real-time playback
-                    await asyncio.sleep(0.03)
+                    await asyncio.sleep(0.03)  # ~30ms to simulate real-time
                 
                 print("Finished sending audio")
                 return True

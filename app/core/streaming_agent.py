@@ -7,6 +7,7 @@ import time
 import uuid
 from typing import Dict, List, Any, Optional, AsyncGenerator
 import json
+from pathlib import Path
 import openai
 from sqlalchemy.orm import Session
 
@@ -89,58 +90,107 @@ class StreamingAgent:
         """Generate streaming response from OpenAI and convert to audio."""
         try:
             self.is_speaking = True
+            logger.info(f"Starting response generation using client type: {type(self.openai_client).__name__}")
+            
+            # Ensure transcript directory exists
+            transcript_dir = Path("storage/transcripts")
+            transcript_dir.mkdir(parents=True, exist_ok=True)
             
             # Generate streaming response
-            stream = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=self.messages,
-                stream=True
-            )
-            
-            full_response = ""
-            chunk_text = ""
-            
-            for chunk in stream:
-                if self.should_interrupt:
-                    logger.info("Response interrupted by user")
-                    break
+            logger.info(f"Creating OpenAI chat completion with {len(self.messages)} messages")
+            try:
+                stream = self.openai_client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=self.messages,
+                    stream=True
+                )
+                logger.info("Successfully created completion stream")
                 
-                # Extract content from chunk
-                if hasattr(chunk.choices[0], 'delta') and chunk.choices[0].delta.content:
-                    chunk_text += chunk.choices[0].delta.content
+                full_response = ""
+                chunk_text = ""
+                
+                logger.info("Processing response stream")
+                for chunk in stream:
+                    if self.should_interrupt:
+                        logger.info("Response interrupted by user")
+                        break
                     
-                    # Process in sentence-sized chunks for more natural TTS
-                    if '.' in chunk_text or '?' in chunk_text or '!' in chunk_text:
-                        full_response += chunk_text
+                    # Extract content from chunk
+                    if hasattr(chunk.choices[0], 'delta') and chunk.choices[0].delta.content:
+                        delta_content = chunk.choices[0].delta.content
+                        chunk_text += delta_content
+                        logger.debug(f"Received chunk: {delta_content}")
                         
-                        # Generate audio for this chunk
-                        audio_chunks = await synthesize_speech_stream(chunk_text, self.openai_client)
-                        
-                        # Queue audio chunks for sending
-                        for audio_chunk in audio_chunks:
-                            if self.should_interrupt:
-                                break
-                            await self.response_queue.put(audio_chunk)
-                        
-                        # Reset chunk text
-                        chunk_text = ""
-            
-            # Process any remaining text
-            if chunk_text and not self.should_interrupt:
-                full_response += chunk_text
-                audio_chunks = await synthesize_speech_stream(chunk_text, self.openai_client)
-                for audio_chunk in audio_chunks:
-                    await self.response_queue.put(audio_chunk)
-            
-            # Add assistant message to history
-            if full_response:
-                self.messages.append({"role": "assistant", "content": full_response})
-            
-            # Signal end of response
-            await self.response_queue.put(None)
-            
+                        # Process in sentence-sized chunks for more natural TTS
+                        if any(punct in chunk_text for punct in ['.', '?', '!']):
+                            full_response += chunk_text
+                            logger.info(f"Processing sentence: {chunk_text}")
+                            
+                            # Save partial transcript
+                            with open(f"storage/transcripts/{self.conversation_id}_partial.txt", "a") as f:
+                                f.write(f"AI: {chunk_text}\n")
+                            
+                            # Generate audio for this chunk
+                            audio_chunks = await synthesize_speech_stream(chunk_text, self.openai_client)
+                            logger.info(f"Generated {len(audio_chunks)} audio chunks")
+                            
+                            # Queue audio chunks for sending
+                            for audio_chunk in audio_chunks:
+                                if self.should_interrupt:
+                                    break
+                                await self.response_queue.put(audio_chunk)
+                            
+                            # Reset chunk text
+                            chunk_text = ""
+                
+                # Process any remaining text
+                if chunk_text and not self.should_interrupt:
+                    full_response += chunk_text
+                    logger.info(f"Processing final chunk: {chunk_text}")
+                    
+                    # Save final part to transcript
+                    with open(f"storage/transcripts/{self.conversation_id}_partial.txt", "a") as f:
+                        f.write(f"AI: {chunk_text}\n")
+                    
+                    audio_chunks = await synthesize_speech_stream(chunk_text, self.openai_client)
+                    logger.info(f"Generated {len(audio_chunks)} final audio chunks")
+                    for audio_chunk in audio_chunks:
+                        await self.response_queue.put(audio_chunk)
+                
+                # Add assistant message to history and save complete transcript
+                if full_response:
+                    self.messages.append({"role": "assistant", "content": full_response})
+                    logger.info(f"Added response to conversation history: {full_response[:50]}...")
+                    
+                    # Save complete transcript
+                    with open(f"storage/transcripts/{self.conversation_id}.txt", "a") as f:
+                        f.write(f"User: {self.partial_transcript}\n")
+                        f.write(f"AI: {full_response}\n\n")
+                
+                # Signal end of response
+                logger.info("Response generation complete")
+                await self.response_queue.put(None)
+                
+            except Exception as e:
+                logger.error(f"OpenAI API error: {str(e)}", exc_info=True)
+                # Fall back to a simple response for testing
+                mock_text = "I'm having trouble connecting to the language model. Please try again."
+                logger.info(f"Using fallback response: {mock_text}")
+                
+                # Save error transcript
+                with open(f"storage/transcripts/{self.conversation_id}_error.txt", "a") as f:
+                    f.write(f"User: {self.partial_transcript}\n")
+                    f.write(f"AI ERROR: {str(e)}\n")
+                    f.write(f"AI FALLBACK: {mock_text}\n\n")
+                
+                audio_chunks = await synthesize_speech_stream(mock_text, None)
+                logger.info(f"Generated {len(audio_chunks)} fallback audio chunks")
+                for chunk in audio_chunks:
+                    await self.response_queue.put(chunk)
+                await self.response_queue.put(None)
+                
         except Exception as e:
-            logger.error(f"Error generating response: {str(e)}")
+            logger.error(f"Error in response generation: {str(e)}", exc_info=True)
             await self.response_queue.put(None)
         
         finally:
@@ -172,3 +222,27 @@ class StreamingAgent:
         """Clean up resources."""
         # Add sentinel to ensure consumers exit
         await self.response_queue.put(None)
+        
+    async def process_audio(self, audio_data: bytes) -> str:
+        """Process audio input and generate a response."""
+        # Transcribe audio
+        transcript = await transcribe_audio_stream(audio_data, self.openai_client)
+        
+        if transcript:
+            logger.info(f"Transcribed: {transcript}")
+            self.partial_transcript = transcript
+            
+            # Save transcript
+            transcript_dir = Path("storage/transcripts")
+            transcript_dir.mkdir(parents=True, exist_ok=True)
+            with open(f"storage/transcripts/{self.conversation_id}.txt", "a") as f:
+                f.write(f"User: {transcript}\n")
+            
+            # Add user message
+            self.messages.append({"role": "user", "content": transcript})
+            
+            # Generate response
+            logger.info("Starting response generation")
+            asyncio.create_task(self._generate_response())
+            
+        return transcript

@@ -1,94 +1,73 @@
 """
-Speech-to-Text module with OpenAI Whisper API integration.
+Speech-to-Text module with streaming support.
 """
 import logging
 import os
-import httpx
 import tempfile
-from typing import Optional
+import asyncio
+from typing import Optional, List, Dict, Any, AsyncGenerator
 import openai
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-async def transcribe_audio(audio_url: str) -> str:
-    """Transcribe audio from a URL using OpenAI Whisper API."""
-    logger.info(f"Transcribing audio from URL: {audio_url}")
+async def transcribe_audio_stream(audio_data: bytes, client: Optional[Any] = None) -> str:
+    """
+    Transcribe audio data using OpenAI Whisper API with streaming support.
     
-    if settings.OPENAI_API_KEY:
-        try:
-            audio_data = await _download_audio(audio_url)
-            if not audio_data:
-                logger.error(f"Failed to download audio from {audio_url}")
-                return _get_mock_transcription(audio_url)
-            
-            return await _transcribe_with_openai(audio_data)
-        except Exception as e:
-            logger.error(f"Error transcribing with OpenAI: {str(e)}")
-            logger.info("Falling back to mock transcription")
-    else:
-        logger.info("No OpenAI API key, using mock transcription")
-    
-    return _get_mock_transcription(audio_url)
-
-async def _download_audio(audio_url: str) -> Optional[bytes]:
-    """Download audio file from a URL."""
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(audio_url, timeout=10.0)
-            response.raise_for_status()
-            return response.content
-    except Exception as e:
-        logger.error(f"Error downloading audio: {str(e)}")
-        return None
-
-async def _transcribe_with_openai(audio_data: bytes) -> str:
-    """Transcribe audio using OpenAI's Whisper API."""
-    
-    
-    client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
-    
-    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as temp_file:
-        temp_file.write(audio_data)
-        temp_file_path = temp_file.name
-    
-    try:
-        with open(temp_file_path, "rb") as audio_file:
-            transcript = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file
-            )
+    Args:
+        audio_data: Raw audio data
+        client: Optional OpenAI client instance
         
-        return transcript.text
-    finally:
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-
-def _get_mock_transcription(audio_url: str) -> str:
-    """Generate a mock transcription based on the URL."""
-    url_lower = audio_url.lower()
+    Returns:
+        Transcribed text
+    """
+    if not audio_data:
+        return ""
     
-    if "menu" in url_lower:
-        return "What's on your menu?"
-    elif "special" in url_lower:
-        return "Do you have any specials today?"
-    elif "reservation" in url_lower or "book" in url_lower:
-        return "I'd like to make a reservation for 4 people tomorrow at 7pm."
-    elif "vegetarian" in url_lower:
-        return "Do you have vegetarian options?"
-    elif "vegan" in url_lower:
-        return "I'm looking for vegan dishes."
-    elif "gluten" in url_lower:
-        return "Do you have gluten-free options?"
-    elif "chicken" in url_lower:
-        return "Do you have any chicken dishes?"
-    elif "spicy" in url_lower:
-        return "How spicy is your food?"
-    elif "hour" in url_lower or "open" in url_lower:
-        return "What are your opening hours?"
-    elif "location" in url_lower or "address" in url_lower:
-        return "Where are you located?"
-    elif "bye" in url_lower or "thank" in url_lower:
-        return "Thank you, goodbye!"
+    if client is None:
+        if not settings.OPENAI_API_KEY:
+            logger.warning("No OpenAI API key, using mock transcription")
+            return _get_mock_transcription(len(audio_data))
+            
+        client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
+    
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
+            temp_file_path = temp_file.name
+            temp_file.write(audio_data)
+        
+        with open(temp_file_path, "rb") as audio_file:
+            response = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                response_format="text"
+            )
+            
+            transcript = response if isinstance(response, str) else response.text
+            return transcript
+    
+    except Exception as e:
+        logger.error(f"Error transcribing audio: {str(e)}")
+        return _get_mock_transcription(len(audio_data))
+    
+    finally:
+        # Clean up temp file
+        try:
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+        except Exception:
+            pass
+
+def _get_mock_transcription(audio_length: int) -> str:
+    """Generate mock transcription for testing."""
+    # Return different mock responses based on audio length
+    if audio_length < 1000:
+        return "Hello."
+    elif audio_length < 5000:
+        return "I'd like to make a reservation."
+    elif audio_length < 10000:
+        return "What vegetarian options do you have on the menu?"
     else:
-        return "Hello, I'm interested in learning more about your restaurant."
+        return "Can I make a reservation for four people tomorrow at 7pm? We're celebrating a birthday."

@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from app.config import settings
 from app.routes import status, admin, twilio_webhook
 from app.routes import audio_test
+from app.routes import websocket
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
@@ -42,6 +43,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(audio_test.router, tags=["Testing"])
+app.include_router(websocket.router, tags=["WebSocket"])
+
 @app.middleware("http")
 async def error_handling_middleware(request: Request, call_next):
     """

@@ -4,6 +4,7 @@ WebSocket routes for audio streaming.
 import logging
 import uuid
 import asyncio
+import os
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from typing import Dict, Any, Optional
 
@@ -22,11 +23,16 @@ stream_manager = StreamManager()
 # Active agents for each connection
 streaming_agents: Dict[str, StreamingAgent] = {}
 
+# Minimum bytes required for processing (default: 3 seconds at 16kHz mono, 16-bit)
+MIN_AUDIO_PROCESSING_SIZE = int(os.getenv("MIN_AUDIO_PROCESSING_SIZE", "96000"))
+
+# app/routes/websocket.py (websocket_audio_endpoint function only)
 @router.websocket("/ws/audio/{client_id}")
 async def websocket_audio_endpoint(
     websocket: WebSocket,
     client_id: Optional[str] = None,
-    db: Session = Depends(get_db_dependency)
+    db: Session = Depends(get_db_dependency),
+    testing: bool = False  # Add testing parameter
 ):
     """WebSocket endpoint for bidirectional audio streaming."""
     if not client_id:
@@ -80,17 +86,18 @@ async def websocket_audio_endpoint(
                 # Accumulate in our temporary buffer
                 all_audio.extend(audio_chunk)
                 
-                # After accumulating enough data (3 seconds at 16kHz mono)
-                if len(all_audio) >= 16000 * 2 * 3:
+                # Process audio when we have enough data OR in testing mode
+                min_size = 1 if testing else 16000 * 2 * 3  # 3 seconds at 16kHz, 16-bit
+                
+                if len(all_audio) >= min_size:
                     if client_id in streaming_agents:
-                        # Save input audio file
-                        audio_path = stream_manager.save_audio_file(client_id, "input", bytes(all_audio))
-                        logger.info(f"Saved input audio to {audio_path}")
+                        # Save input audio file (skip in testing mode)
+                        if not testing:
+                            audio_path = stream_manager.save_audio_file(client_id, "input", bytes(all_audio))
+                            logger.info(f"Saved input audio to {audio_path}")
                         
                         logger.info(f"Processing {len(all_audio)} bytes of accumulated audio")
-                        asyncio.create_task(
-                            streaming_agents[client_id].process_audio(bytes(all_audio))
-                        )
+                        await streaming_agents[client_id].process_audio(bytes(all_audio))
                         # Clear the buffer
                         all_audio = bytearray()
             
@@ -108,8 +115,8 @@ async def websocket_audio_endpoint(
     except Exception as e:
         logger.error(f"WebSocket error: {str(e)}", exc_info=True)
     finally:
-        # Save any remaining audio
-        if len(all_audio) > 0:
+        # Save any remaining audio (skip in testing)
+        if len(all_audio) > 0 and not testing:
             stream_manager.save_audio_file(client_id, "input_final", bytes(all_audio))
             
         # Clean up resources

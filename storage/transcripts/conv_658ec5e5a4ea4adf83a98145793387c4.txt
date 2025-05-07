@@ -1,0 +1,4 @@
+User: Can I make a reservation for four people tomorrow at 7pm? We're celebrating a birthday.
+User: Can I make a reservation for four people tomorrow at 7pm? We're celebrating a birthday.
+AI: Sure! I'd be happy to help you with that. Could you please provide me with your name and phone number for the reservation? Also, do you have any special requests for the birthday celebration?
+

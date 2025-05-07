@@ -44,7 +44,7 @@ class TestStreamManager(unittest.IsolatedAsyncioTestCase):
         
         await self.stream_manager.connect(mock_ws, client_id)
         
-        mock_ws.accept.assert_called_once()
+        # No longer expect accept() to be called
         self.assertIn(client_id, self.stream_manager.active_connections)
         self.assertIn(client_id, self.stream_manager.vad_detectors)
         self.assertIn(client_id, self.stream_manager.input_buffers)

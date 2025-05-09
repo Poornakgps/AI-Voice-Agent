@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form
 from fastapi.responses import JSONResponse
-from app.voice.tts import synthesize_speech
-from app.voice.stt import transcribe_audio
+from app.voice.tts import synthesize_speech_stream as synthesize_speech 
+from app.voice.stt import transcribe_audio_stream as transcribe_audio
 from app.core.models import VoiceSettings
 
 router = APIRouter()

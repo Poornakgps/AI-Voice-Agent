@@ -8,38 +8,39 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def parse_twiml(twiml_text):
-    """Parse TwiML response and extract key information."""
+    """Parse TwiML response and extract key information for Media Streams."""
     try:
+        # Strip whitespace and normalize
+        twiml_text = twiml_text.strip()
+        
         root = ET.fromstring(twiml_text)
+        
+        # Check for Media Streams elements
+        stream_elements = root.findall(".//Stream")
+        has_stream = len(stream_elements) > 0
+        
+        # Get Stream URLs
+        stream_urls = [stream.get("url") for stream in stream_elements if stream.get("url")]
+        
+        # Check for Say elements
         say_elements = root.findall(".//Say")
         say_texts = [say.text for say in say_elements if say.text]
         
-        record_elements = root.findall(".//Record")
-        has_record = len(record_elements) > 0
-        
-        gather_elements = root.findall(".//Gather")
-        has_gather = len(gather_elements) > 0
-        
-        hangup_elements = root.findall(".//Hangup")
-        has_hangup = len(hangup_elements) > 0
-        
         return {
-            "say_texts": say_texts,
-            "has_record": has_record,
-            "has_gather": has_gather,
-            "has_hangup": has_hangup
+            "has_stream": has_stream,
+            "stream_urls": stream_urls,
+            "say_texts": say_texts
         }
     except Exception as e:
         print(f"Error parsing TwiML: {e}")
         return {
-            "say_texts": [],
-            "has_record": False,
-            "has_gather": False,
-            "has_hangup": False
+            "has_stream": False,
+            "stream_urls": [],
+            "say_texts": []
         }
 
 def test_voice_webhook(url):
-    """Test the voice webhook with a simple request."""
+    """Test the voice webhook for Media Streams approach."""
     call_sid = f"TEST{uuid.uuid4().hex[:16].upper()}"
     
     account_sid = os.environ.get("TWILIO_SID_KEY", "AC00000000000000000000000000000000")
@@ -60,7 +61,7 @@ def test_voice_webhook(url):
     try:
         response = requests.post(url, data=data, timeout=10)
         print(f"Full request data: {data}")
-        print(f"Full response: {response.text}")
+        
         if response.status_code == 200:
             print("\n✅ Webhook responded with status code 200")
             print("Raw response:")
@@ -70,16 +71,16 @@ def test_voice_webhook(url):
             
             twiml_info = parse_twiml(response.text)
             
+            if twiml_info["has_stream"]:
+                print("✅ Response includes <Stream> element for Media Streams")
+                for url in twiml_info["stream_urls"]:
+                    print(f"  Stream URL: {url}")
+            else:
+                print("❌ No <Stream> element found - Media Streams not configured correctly")
+                
             if twiml_info["say_texts"]:
                 print(f"Agent says: \"{twiml_info['say_texts'][0]}\"")
-            else:
-                print("⚠️ No <Say> element found in response")
-                
-            if twiml_info["has_record"]:
-                print("✅ Response includes <Record> element (will capture user speech)")
-            else:
-                print("⚠️ No <Record> element found in response")
-                
+            
             return response.text, call_sid
         else:
             print(f"❌ Webhook responded with status code {response.status_code}")
@@ -89,101 +90,56 @@ def test_voice_webhook(url):
         print(f"❌ Error testing webhook: {str(e)}")
         return None, None
 
-def test_transcribe_webhook(url, call_sid, message=None):
-    """Test the transcribe webhook with a user-provided message."""
-    if message is None:
-        message = input("Enter message to test (or press Enter for empty message): ").strip()
-    
-    recording_sid = f"RE{uuid.uuid4().hex[:16].upper()}"
-    account_sid = os.environ.get("TWILIO_SID_KEY", "AC00000000000000000000000000000000")
-    
-    recording_url = f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Recordings/{recording_sid}"
-    
+def test_status_webhook(url, call_sid):
+    """Test the status webhook."""
     data = {
         "CallSid": call_sid,
-        "AccountSid": account_sid,
-        "RecordingSid": recording_sid,
-        "RecordingUrl": recording_url,
-        "RecordingStatus": "completed",
-        "RecordingDuration": "5",
+        "CallStatus": "completed"
     }
     
-    if message:
-        data["Transcript"] = message
-    
-    print(f"\nSending transcribe request to: {url}")
-    print(f"With message: \"{message}\"" if message else "With empty message")
+    print(f"\nSending status update to: {url}")
     
     try:
         response = requests.post(url, data=data, timeout=10)
         
         if response.status_code == 200:
-            print("✅ Webhook responded with status code 200")
-            print("Raw response:")
-            print("-" * 50)
-            print(response.text)
-            print("-" * 50)
-            
-            twiml_info = parse_twiml(response.text)
-            
-            if twiml_info["say_texts"]:
-                print(f"Agent replies: \"{twiml_info['say_texts'][0]}\"")
-            else:
-                print("⚠️ No <Say> element found in response")
-                
-            if twiml_info["has_record"]:
-                print("✅ Response includes <Record> element (conversation continues)")
-            elif twiml_info["has_hangup"]:
-                print("✅ Response includes <Hangup> element (conversation ends)")
-            else:
-                print("⚠️ No <Record> or <Hangup> element found in response")
-                
-            return response.text
+            print("✅ Status webhook responded with status code 200")
+            return True
         else:
-            print(f"❌ Webhook responded with status code {response.status_code}")
-            print(f"Response: {response.text}")
-            return None
+            print(f"❌ Status webhook responded with status code {response.status_code}")
+            return False
     except Exception as e:
-        print(f"❌ Error testing webhook: {str(e)}")
-        return None
+        print(f"❌ Error testing status webhook: {str(e)}")
+        return False
 
 def main():
-    parser = argparse.ArgumentParser(description="Test Twilio webhooks locally")
+    parser = argparse.ArgumentParser(description="Test Twilio Media Streams webhook")
     parser.add_argument("--url", default=os.environ.get("WEBHOOK_BASE_URL", "http://localhost:8000"), 
                         help="Base URL of the application")
-    parser.add_argument("--message", default="", 
-                        help="Message to send to the transcribe webhook (empty = interactive mode)")
-    parser.add_argument("--voice-path", default=os.environ.get("VOICE_WEBHOOK_PATH", "/webhook/voice"), 
+    parser.add_argument("--voice-path", default="/webhook/voice", 
                         help="Path for the voice webhook")
-    parser.add_argument("--transcribe-path", default=os.environ.get("TRANSCRIBE_WEBHOOK_PATH", "/webhook/transcribe"), 
-                        help="Path for the transcribe webhook")
+    parser.add_argument("--status-path", default="/webhook/status", 
+                        help="Path for the status webhook")
     args = parser.parse_args()
     
     base_url = args.url.rstrip('/')
     voice_url = f"{base_url}{args.voice_path}"
-    transcribe_url = f"{base_url}{args.transcribe_path}"
+    status_url = f"{base_url}{args.status_path}"
     
     print("=========================================================")
-    print("Voice AI Restaurant Agent - Local Webhook Test")
+    print("Voice AI Restaurant Agent - Media Streams Webhook Test")
     print("=========================================================")
     
-    print("\n🔍 Testing voice webhook (call initiation)...")
+    print("\n🔍 Testing voice webhook (Media Streams initialization)...")
     voice_response, call_sid = test_voice_webhook(voice_url)
     
     if voice_response and call_sid:
-        message = args.message if args.message else None
+        print("\n✅ Media Streams setup test passed")
+        print("\nNote: Further testing would require a WebSocket client to test the stream connection")
+        print("For a full test, configure the webhook URL in Twilio and make a real call")
         
-        print("\n🔍 Testing transcribe webhook (message processing)...")
-        test_transcribe_webhook(transcribe_url, call_sid, message)
-
-        if not args.message:
-            while True:
-                continue_chat = input("\nContinue conversation? (y/n): ").lower()
-                if continue_chat != 'y':
-                    break
-                
-                next_message = input("Enter next message: ")
-                test_transcribe_webhook(transcribe_url, call_sid, next_message)
+        print("\n🔍 Testing status webhook...")
+        test_status_webhook(status_url, call_sid)
     
     print("\n=========================================================")
     print("Test completed")

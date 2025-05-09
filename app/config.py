@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     DEBUG: bool = Field(False, description="Enable debug mode")
     LOG_LEVEL: str = "INFO"
     APP_ENV: str = "production"  # development, staging, production
+    WEBHOOK_BASE_URL: str = os.getenv("WEBHOOK_BASE_URL", "http://localhost:8000")
+    USE_MEDIA_STREAMS: bool = os.getenv("USE_MEDIA_STREAMS", "False").lower() in ("true", "1", "t", "yes")
     
     HOST: str = "0.0.0.0"
     PORT: int = 8000

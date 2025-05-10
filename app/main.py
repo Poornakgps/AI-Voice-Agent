@@ -51,7 +51,7 @@ async def error_handling_middleware(request: Request, call_next):
         )
 
 app.include_router(status.router, tags=["Status"])
-app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+# app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 app.include_router(twilio_webhook.router, prefix="/webhook", tags=["Webhook"])
 app.include_router(twilio_streams.router, tags=["Twilio Streams"])
 app.include_router(websocket_routes.router, tags=["WebSocket"])

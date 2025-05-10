@@ -1,9 +1,3 @@
-"""
-Agent orchestration module for the Voice AI Restaurant Agent.
-
-This module handles the main agent logic, conversation management,
-and integration with the OpenAI Agent SDK.
-"""
 import logging
 import json
 from typing import Dict, Any, List, Optional

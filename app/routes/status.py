@@ -50,23 +50,23 @@ async def readiness_check():
     """
     return {"status": "ready"}
 
-@router.get("/metrics", response_model=MetricsResponse)
-async def metrics():
-    """
-    Metrics endpoint for monitoring.
+# @router.get("/metrics", response_model=MetricsResponse)
+# async def metrics():
+#     """
+#     Metrics endpoint for monitoring.
     
-    Returns:
-        MetricsResponse: Current service metrics.
-    """
-    uptime = time.time() - START_TIME
+#     Returns:
+#         MetricsResponse: Current service metrics.
+#     """
+#     uptime = time.time() - START_TIME
     
-    # Mock metrics
-    return MetricsResponse(
-        uptime=uptime,
-        memory_usage=123.45,  # MB
-        cpu_usage=10.5,  # %
-        active_connections=2
-    )
+#     # Mock metrics
+#     return MetricsResponse(
+#         uptime=uptime,
+#         memory_usage=123.45,  # MB
+#         cpu_usage=10.5,  # %
+#         active_connections=2
+#     )
 
 @router.get("/test-openai", status_code=status.HTTP_200_OK)
 async def test_openai():
@@ -83,11 +83,10 @@ async def test_openai():
             api_key=settings.OPENAI_API_KEY, 
             organization=settings.OPENAIORG_ID
         )
-        print(settings.OPENAI_API_KEY, settings.OPENAIORG_ID)
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "Say hello"}],
+            messages=[{"role": "user", "content": "which model am i talking to?"}],
             max_tokens=10
         )
         
@@ -108,8 +107,6 @@ async def test_twilio():
     Returns:
         dict: Status of the Twilio API connection test with diagnostic information
     """
-    import datetime
-    from app.utils.twilio_client import create_twilio_client
     
     if not settings.TWILIO_API_KEY or not settings.TWILIO_API_SECRET:
         return {
@@ -119,6 +116,9 @@ async def test_twilio():
         }
     
     try:
+        import datetime
+        from app.utils.twilio_client import create_twilio_client
+        
         client = create_twilio_client()
         if not client:
             return {
@@ -127,7 +127,7 @@ async def test_twilio():
                 "help": "Check your API credentials in the .env file"
             }
         
-        numbers = client.incoming_phone_numbers.list(limit=1)
+        numbers = client.incoming_phone_numbers.list(limit=10)
         
         return {
             "status": "success",

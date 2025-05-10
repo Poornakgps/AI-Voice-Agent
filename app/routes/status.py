@@ -36,38 +36,7 @@ async def health_check():
         version=settings.APP_VERSION,
         environment=settings.APP_ENV
     )
-
-@router.get("/readiness", status_code=status.HTTP_200_OK)
-async def readiness_check():
-    """
-    Readiness check endpoint to verify service is ready to accept requests.
     
-    This would typically check database connectivity, external services, etc.
-    For now, it's a simple endpoint returning 200 OK.
-    
-    Returns:
-        dict: Simple status message.
-    """
-    return {"status": "ready"}
-
-# @router.get("/metrics", response_model=MetricsResponse)
-# async def metrics():
-#     """
-#     Metrics endpoint for monitoring.
-    
-#     Returns:
-#         MetricsResponse: Current service metrics.
-#     """
-#     uptime = time.time() - START_TIME
-    
-#     # Mock metrics
-#     return MetricsResponse(
-#         uptime=uptime,
-#         memory_usage=123.45,  # MB
-#         cpu_usage=10.5,  # %
-#         active_connections=2
-#     )
-
 @router.get("/test-openai", status_code=status.HTTP_200_OK)
 async def test_openai():
     """

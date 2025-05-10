@@ -4,7 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic import field_validator, Field
 from pydantic_settings import BaseSettings
-from typing import Optional, Dict, Any, Union
+from typing import Optional
 from functools import lru_cache
 
 project_root = Path(__file__).parent.parent
@@ -26,7 +26,6 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     APP_ENV: str = "production"  # development, staging, production
     WEBHOOKBASE_URL: str = os.getenv("WEBHOOKBASE_URL", "http://localhost:8000")
-    USE_MEDIA_STREAMS: bool = os.getenv("USE_MEDIA_STREAMS", "False").lower() in ("true", "1", "t", "yes")
     
     HOST: str = "0.0.0.0"
     PORT: int = 8000
@@ -50,8 +49,6 @@ class Settings(BaseSettings):
     GOOGLE_CLOUD_PROJECT: Optional[str] = None
     GOOGLE_CLOUD_CREDENTIALS: Optional[str] = None
     GOOGLE_CLOUD_REGION: str = "us-central1"
-    
-    USE_REAL_APIS: bool = True
     
     @field_validator("DEBUG", mode="before")
     @classmethod
@@ -152,21 +149,5 @@ def get_openai_client_params():
     
     if settings.OPENAIORG_ID is not None:
         params["organization"] = settings.OPENAIORG_ID
-
-    print(f"OpenAI client parameters: {params}")
         
     return params
-
-if __name__ == "__main__":
-    # print("\nEnvironment variable values:")
-    # print(f"OPENAI_API_KEY from env: {os.getenv('OPENAI_API_KEY', 'Not found')}")
-    # print(f"OPENAI_ORG_ID from env: {os.getenv('OPENAI_ORG_ID', 'Not found')}")
-    
-    # print("\nSettings values:")
-    # print(f"OpenAI API Key: {'Configured' if settings.OPENAI_API_KEY else 'Not configured'}")
-    # print(f"OpenAI Org ID: {'Configured as: ' + settings.OPENAI_ORG_ID if settings.OPENAI_ORG_ID else 'Not configured'}")
-    # print(f"Twilio API Key: {'Configured' if settings.TWILIO_API_KEY else 'Not configured'}")
-    # print(f"Twilio API Secret: {'Configured' if settings.TWILIO_API_SECRET else 'Not configured'}")
-    
-    # print("\nOpenAI client parameters:")
-    print(get_openai_client_params())

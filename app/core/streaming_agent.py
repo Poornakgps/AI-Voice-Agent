@@ -1,6 +1,3 @@
-"""
-Streaming agent for real-time voice interactions.
-"""
 import asyncio
 import logging
 import time

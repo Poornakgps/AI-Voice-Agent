@@ -28,7 +28,6 @@ streaming_agents = {}
 USE_MEDIA_STREAMS = True
 
 def validate_twilio_request(request: Request, form_data) -> bool:
-    """Validate that the request is coming from Twilio."""
     if settings.DEBUG or not settings.TWILIO_API_SECRET:
         return True
     
@@ -49,7 +48,7 @@ def validate_twilio_request(request: Request, form_data) -> bool:
 
 @router.post("/status", status_code=status.HTTP_200_OK)
 async def status_webhook(request: Request):
-    """Handle call status callbacks from Twilio."""
+
     form_data = await request.form()
     call_sid = form_data.get("CallSid", "unknown")
     call_status = form_data.get("CallStatus", "unknown")
@@ -63,7 +62,7 @@ async def status_webhook(request: Request):
 
 @router.post("/fallback", response_class=PlainTextResponse)
 async def fallback_webhook(request: Request):
-    """Handle fallback requests when errors occur in Twilio."""
+
     form_data = await request.form()
     call_sid = form_data.get("CallSid", "unknown")
     error_code = form_data.get("ErrorCode", "unknown")
@@ -71,7 +70,7 @@ async def fallback_webhook(request: Request):
     logger.error(f"Twilio error in call {call_sid}: {error_code}")
     
     # Generate TwiML that will reset the call using Media Streams
-    stream_url = f"{settings.WEBHOOK_BASE_URL}/streams/{call_sid}"
+    stream_url = f"{settings.WEBHOOKBASE_URL}/streams/{call_sid}"
     
     twiml = f"""
     <?xml version="1.0" encoding="UTF-8"?>
@@ -90,7 +89,7 @@ async def fallback_webhook(request: Request):
 
 @router.post("/voice", response_class=PlainTextResponse)
 async def voice_webhook(request: Request):
-    """Setup Twilio call with Media Streams."""
+
     form_data = await request.form()
     
     if not validate_twilio_request(request, form_data):
@@ -101,7 +100,7 @@ async def voice_webhook(request: Request):
     logger.info(f"Incoming call received: {call_sid} from {caller}")
     
     # Generate TwiML to establish Media Streams connection
-    stream_url = f"{settings.WEBHOOK_BASE_URL}/streams/{call_sid}"
+    stream_url = f"{settings.WEBHOOKBASE_URL}/streams/{call_sid}"
     
     twiml = f"""
     <?xml version="1.0" encoding="UTF-8"?>

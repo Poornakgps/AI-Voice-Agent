@@ -20,8 +20,8 @@ async def twilio_media_stream(
     call_sid: str,
     db: Session = Depends(get_db_dependency)
 ):
-    """WebSocket endpoint for Twilio Media Streams."""
-    agent = StreamingAgent(db)
+    
+    agent = StreamingAgent(db) # Initialize agent
     
     try:
         await media_handler.handle_connection(websocket, call_sid, agent)

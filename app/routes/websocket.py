@@ -2,6 +2,7 @@
 WebSocket routes for audio streaming.
 """
 import logging
+from pathlib import Path
 import uuid
 import asyncio
 import os
@@ -12,6 +13,9 @@ from app.voice.streaming import StreamManager
 from app.core.streaming_agent import StreamingAgent
 from database import get_db_dependency
 from sqlalchemy.orm import Session
+
+Path("storage/audio").mkdir(parents=True, exist_ok=True)
+Path("storage/transcripts").mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +29,7 @@ streaming_agents: Dict[str, StreamingAgent] = {}
 
 # Minimum bytes required for processing (default: 3 seconds at 16kHz mono, 16-bit)
 MIN_AUDIO_PROCESSING_SIZE = int(os.getenv("MIN_AUDIO_PROCESSING_SIZE", "96000"))
+
 
 # app/routes/websocket.py (websocket_audio_endpoint function only)
 @router.websocket("/ws/audio/{client_id}")

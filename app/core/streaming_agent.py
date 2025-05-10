@@ -223,26 +223,44 @@ class StreamingAgent:
         # Add sentinel to ensure consumers exit
         await self.response_queue.put(None)
         
-    async def process_audio(self, audio_data: bytes) -> str:
-        """Process audio input and generate a response."""
-        # Transcribe audio
-        transcript = await transcribe_audio_stream(audio_data, self.openai_client)
+    # async def process_audio(self, audio_data: bytes) -> str:
+    #     """Process audio input and generate a response."""
+    #     # Transcribe audio
+    #     transcript = await transcribe_audio_stream(audio_data, self.openai_client)
         
-        if transcript:
-            logger.info(f"Transcribed: {transcript}")
-            self.partial_transcript = transcript
+    #     if transcript:
+    #         logger.info(f"Transcribed: {transcript}")
+    #         self.partial_transcript = transcript
             
-            # Save transcript
-            transcript_dir = Path("storage/transcripts")
-            transcript_dir.mkdir(parents=True, exist_ok=True)
-            with open(f"storage/transcripts/{self.conversation_id}.txt", "a") as f:
-                f.write(f"User: {transcript}\n")
+    #         # Save transcript
+    #         transcript_dir = Path("storage/transcripts")
+    #         transcript_dir.mkdir(parents=True, exist_ok=True)
+    #         with open(f"storage/transcripts/{self.conversation_id}.txt", "a") as f:
+    #             f.write(f"User: {transcript}\n")
             
-            # Add user message
-            self.messages.append({"role": "user", "content": transcript})
+    #         # Add user message
+    #         self.messages.append({"role": "user", "content": transcript})
             
-            # Generate response
-            logger.info("Starting response generation")
-            asyncio.create_task(self._generate_response())
+    #         # Generate response
+    #         logger.info("Starting response generation")
+    #         asyncio.create_task(self._generate_response())
             
-        return transcript
+    #     return transcript
+    
+    async def stream_response(self, text: str):
+        """Stream a text response to audio."""
+        if not text:
+            return
+            
+        logger.info(f"Streaming response: {text[:50]}...")
+        self.messages.append({"role": "assistant", "content": text})
+        
+        # Generate audio chunks
+        audio_chunks = await synthesize_speech_stream(text, self.openai_client)
+        
+        # Queue chunks for sending
+        for chunk in audio_chunks:
+            await self.response_queue.put(chunk)
+        
+        # Signal end of response
+        await self.response_queue.put(None)

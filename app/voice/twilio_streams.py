@@ -46,7 +46,7 @@ class TwilioMediaStreamHandler:
         # Register interrupt handler
         self.stream_manager.register_interrupt_handler(
             call_sid, 
-            lambda cid: self.active_calls[cid].handle_interruption()
+            lambda cid: asyncio.create_task(self.active_calls[cid].handle_interruption())
         )
         
         # Start response streaming task
